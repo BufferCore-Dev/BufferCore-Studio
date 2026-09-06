@@ -93,8 +93,12 @@ function status() {
 }
 
 async function npm(cwd, args) {
-  const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  return execFileAsync(command, args, { cwd, windowsHide: true, maxBuffer: 24 * 1024 * 1024 });
+  const invocation = process.env.npm_execpath
+    ? { command: process.execPath, args: [process.env.npm_execpath, ...args] }
+    : process.platform === 'win32'
+      ? { command: process.env.ComSpec || process.env.COMSPEC || 'cmd.exe', args: ['/d', '/s', '/c', 'npm', ...args] }
+      : { command: 'npm', args };
+  return execFileAsync(invocation.command, invocation.args, { cwd, windowsHide: true, maxBuffer: 24 * 1024 * 1024 });
 }
 
 async function pullBuild(flavour) {
