@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BufferCore Studio</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#171717;background:#f5f5f3}*{box-sizing:border-box}body{margin:0}.shell{max-width:1180px;margin:0 auto;padding:32px}.top{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:24px}.eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6b6b66}h1{margin:5px 0 0;font-size:32px}.status{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #deded8;font-size:13px}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:#fff;border:1px solid #dfdfd9;border-radius:14px;padding:18px;box-shadow:0 1px 1px rgba(0,0,0,.02)}.card h2{font-size:16px;margin:0 0 14px}.repo{padding:13px 0;border-top:1px solid #ededE8;display:grid;grid-template-columns:130px 1fr auto;gap:12px;align-items:center}.repo:first-of-type{border-top:0}.repo-name{font-weight:650}.meta{font-size:13px;color:#666}.dirty{font-size:12px;padding:4px 8px;border-radius:999px;background:#fff3cf}.clean{font-size:12px;color:#5e665c}.controls{display:grid;gap:10px}.row{display:flex;gap:10px}.row>*{flex:1}select,input,button{font:inherit;border:1px solid #d7d7d0;border-radius:9px;padding:10px 11px;background:#fff}button{cursor:pointer;font-weight:650}button.primary{background:#171717;color:#fff;border-color:#171717}button:disabled{opacity:.45;cursor:not-allowed}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{padding:13px;border-radius:10px;background:#f6f6f3}.metric b{display:block;font-size:22px}.metric span{font-size:12px;color:#666}.flavour{padding:14px;background:#f6f6f3;border-radius:10px;margin:10px 0 14px}.log{font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre-wrap;background:#171717;color:#eee;border-radius:10px;padding:13px;min-height:110px;max-height:260px;overflow:auto}.changes{margin-top:18px}.commit{display:grid;grid-template-columns:150px 1fr auto;gap:10px;margin-top:10px}.footer{margin-top:18px;font-size:12px;color:#777}@media(max-width:820px){.grid{grid-template-columns:1fr}.repo{grid-template-columns:100px 1fr}.repo>:last-child{grid-column:2}.commit{grid-template-columns:1fr}.shell{padding:18px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top"><div><div class="eyebrow">BufferCore Studio</div><h1>Repository sync</h1></div><div class="status" id="statusPill">Loading…</div></div>
+  <div class="grid">
+    <section class="card"><h2>Repositories</h2><div id="repos"></div></section>
+    <section class="card"><h2>Resolved system</h2><div class="controls"><label>Flavour<select id="flavour"><option value="">Core baseline</option></select></label><div class="row"><button id="refresh">Refresh</button><button id="validate">Validate</button><button class="primary" id="pull">Pull + build</button></div></div><div class="flavour" id="resolved">No generated manifest yet.</div><div class="summary" id="metrics"></div></section>
+  </div>
+  <section class="card changes"><h2>Git changes + commit</h2><div id="changeList"></div><div class="commit"><select id="commitRepo"><option value="core">BufferCore</option><option value="flavours">BufferCore-Flavours</option><option value="engine">BufferCore-Engine</option><option value="figma">BufferCore-Figma</option><option value="studio">BufferCore-Studio</option></select><input id="commitMessage" placeholder="Commit message"><button id="commitPush">Commit + push</button></div></section>
+  <section class="card changes"><h2>Operation output</h2><div class="log" id="log">Ready.</div></section>
+  <div class="footer">Temporary control surface. Figma remains the practical design surface while BufferCore matures.</div>
+</main>
+<script>
+const $=s=>document.querySelector(s); let latest=null;
+function short(c){return c?c.slice(0,10):'—'}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function render(data){latest=data; $('#statusPill').textContent=data.busy?'Working…':'Ready'; const labels={core:'BufferCore',flavours:'Flavours',engine:'Engine',figma:'Figma',studio:'Studio'}; $('#repos').innerHTML=Object.entries(data.repositories).map(([id,r])=>`<div class="repo"><div class="repo-name">${labels[id]}</div><div class="meta">${r.available?`${escapeHtml(r.branch||'detached')} · ${short(r.commit)}`:'Not a Git repo'}</div><div class="${r.dirty?'dirty':'clean'}">${r.dirty?`${r.status.length} change${r.status.length===1?'':'s'}`:'Clean'}</div></div>`).join('');
+ const current=$('#flavour').value; $('#flavour').innerHTML='<option value="">Core baseline</option>'+data.flavours.map(f=>`<option value="${escapeHtml(f.id)}">${escapeHtml(f.displayName)}</option>`).join(''); if([...$('#flavour').options].some(o=>o.value===current)) $('#flavour').value=current;
+ const f=data.manifests.figma; $('#resolved').innerHTML=f?`<b>${escapeHtml(f.flavour?.displayName||f.flavour?.id||'Core baseline')}</b><div class="meta">Generated ${escapeHtml(f.generatedAt||'—')}</div>`:'No generated Figma manifest yet.';
+ $('#metrics').innerHTML=f?`<div class="metric"><b>${f.collections}</b><span>Collections</span></div><div class="metric"><b>${f.variables}</b><span>Variables</span></div><div class="metric"><b>${f.styles}</b><span>Styles</span></div>`:'';
+ $('#changeList').innerHTML=Object.entries(data.repositories).flatMap(([id,r])=>(r.status||[]).map(s=>`<div class="meta">${labels[id]} · ${escapeHtml(s)}</div>`)).join('')||'<div class="meta">No uncommitted changes.</div>';
+}
+async function api(url,opts={}){const r=await fetch(url,{headers:{'content-type':'application/json'},...opts});const d=await r.json();if(!r.ok||d.ok===false)throw new Error(d.error||'Request failed');return d}
+async function refresh(){try{render(await api('/api/status'))}catch(e){$('#log').textContent=e.message}}
+async function operation(fn){for(const b of document.querySelectorAll('button')) b.disabled=true; $('#statusPill').textContent='Working…'; try{const d=await fn(); if(d.status)render(d.status); $('#log').textContent=[d.stdout,d.engine,d.figma,d.stderr].filter(Boolean).join('\n\n')||'Complete.'}catch(e){$('#log').textContent=e.message; await refresh()}finally{for(const b of document.querySelectorAll('button')) b.disabled=false}}
+$('#refresh').onclick=refresh;
+$('#validate').onclick=()=>operation(()=>api('/api/validate',{method:'POST',body:'{}'}));
+$('#pull').onclick=()=>operation(()=>api('/api/pull-build',{method:'POST',body:JSON.stringify({flavour:$('#flavour').value||null})}));
+$('#commitPush').onclick=()=>operation(()=>api('/api/commit-push',{method:'POST',body:JSON.stringify({repository:$('#commitRepo').value,message:$('#commitMessage').value})}));
+refresh();
+</script>
+</body>
+</html>
