@@ -8,10 +8,10 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { repoState, commitAndPush } from './git.mjs';
 import { createFlavour, deleteFlavour, discoverFlavourDocuments, duplicateFlavour, getFlavourDocument, primitiveCatalogue, updateFlavour, updateFlavourOverrides, updateFlavourSemanticColourMappings, updateFlavourSemanticTypographyMappings } from './flavours.mjs';
-import { aiConfig, discoverAiModels, persistAiModel, runAssistant, runSemanticColourAssistant, runSemanticTypographyAssistant } from './ai.mjs';
+import { aiConfig, discoverAiModels, persistAiModel, runAssistant, runSemanticColourPlanAssistant, runSemanticTypographyAssistant } from './ai.mjs';
 import { reviewFlavour } from './review.mjs';
 import { applyFlavour } from '../../BufferCore-Engine/packages/flavour-engine.mjs';
-import { buildSemanticCandidateSets, fixedSemanticMappings, semanticCompletion, validateSemanticMappings } from './semantic-colour.mjs';
+import { buildSemanticCandidateSets, completeSemanticSelections, fixedSemanticMappings, semanticCompletion, semanticDesignBatches, semanticFindings, validateSemanticMappings } from './semantic-colour.mjs';
 import { buildTypographyCandidateSets, baselineTypographyMappings, effectiveTypographyMappings, normaliseTypographyOverrides, typographyCompletion, validateTypographyMappings } from './semantic-typography.mjs';
 
 const execFileAsync = promisify(execFile);
@@ -265,7 +265,9 @@ const server = http.createServer(async (req, res) => {
       const mode = parts[5];
       const flavour = getFlavourDocument(flavoursRoot, id);
       if (!flavour) return sendJson(res, 404, { ok: false, error: 'Flavour not found.' });
-      return sendJson(res, 200, { ok: true, mode, mappings: flavour.semanticMappings?.colour?.[mode] || {}, candidateSets: buildSemanticCandidateSets(flavour, mode), completion: semanticCompletion(flavour, mode) });
+      const mappings = flavour.semanticMappings?.colour?.[mode] || {};
+      const candidateSets = buildSemanticCandidateSets(flavour, mode);
+      return sendJson(res, 200, { ok: true, mode, mappings, candidateSets, completion: semanticCompletion(flavour, mode), findings: semanticFindings(flavour, mode, mappings) });
     }
     if (req.method === 'POST' && req.url.match(/^\/api\/flavours\/[^/]+\/colour-semantics\/(light|dark)\/generate$/)) {
       const parts = req.url.split('/');
@@ -277,18 +279,108 @@ const server = http.createServer(async (req, res) => {
       const sets = buildSemanticCandidateSets(flavour, mode);
       const fixed = fixedSemanticMappings(flavour, mode);
       const existing = flavour.semanticMappings?.colour?.[mode] || {};
-      const ambiguous = sets.filter((set) => !set.fixed && set.candidates.length > 1);
-      let ai = { reply: 'All available mappings were fixed by the BufferCore contract.', mappings: [], model: null };
-      if (ambiguous.length) ai = await runSemanticColourAssistant({ mode, candidateSets: sets, existing, message: String(data.message || '').trim(), model: data.model });
-      const selected = { ...fixed };
-      for (const set of sets) {
-        if (!selected[set.token] && set.candidates.length === 1) selected[set.token] = set.candidates[0];
+      const batches = semanticDesignBatches(flavour, mode);
+      const buildMode = data.buildMode === 'deterministic' ? 'deterministic' : 'ai';
+      const startedAt = Date.now();
+      const freshBuild = data.fresh !== false;
+      const buildBaseline = freshBuild ? {} : existing;
+      let ai = { reply: '', batchSelections: [], model: data.model || null };
+      if (buildMode === 'ai') {
+        if (!batches.length) {
+          throw Object.assign(new Error('BufferCore produced no Semantic design batches for AI to judge. Use the deterministic build or review the Colour contract.'), { code: 'SEMANTIC_AI_NO_BATCHES' });
+        }
+        try {
+          ai = await runSemanticColourPlanAssistant({ mode, batches, existing: buildBaseline, message: String(data.message || '').trim(), model: data.model });
+        } catch (error) {
+          const wrapped = new Error(`Local AI did not complete the ${mode} Semantic build. ${error.message || error}`);
+          wrapped.code = 'SEMANTIC_AI_UNAVAILABLE';
+          throw wrapped;
+        }
+
+        const legalBatchIds = new Set(batches.map(batch => batch.id));
+        const answeredBatchIds = new Set(
+          (ai.batchSelections || [])
+            .map(item => item?.batchId)
+            .filter(id => legalBatchIds.has(id))
+        );
+        if (answeredBatchIds.size !== batches.length) {
+          const missing = batches.filter(batch => !answeredBatchIds.has(batch.id)).map(batch => batch.label || batch.id);
+          const wrapped = new Error(
+            `Local AI only returned valid decisions for ${answeredBatchIds.size}/${batches.length} colour families. ` +
+            `Nothing was saved. Missing: ${missing.slice(0, 8).join(', ')}${missing.length > 8 ? ` (+${missing.length - 8} more)` : ''}.`
+          );
+          wrapped.code = 'SEMANTIC_AI_INCOMPLETE';
+          throw wrapped;
+        }
+      } else {
+        ai = {
+          reply: 'BufferCore used the highest-scoring deterministic family options.',
+          batchSelections: [],
+          model: null
+        };
       }
-      for (const item of ai.mappings || []) selected[item.semanticToken] = item.primitiveToken;
-      const missingAi = sets.filter((set) => set.candidates.length > 1 && !selected[set.token]);
-      if (missingAi.length) throw new Error(`Local AI did not return legal selections for ${missingAi.length} Semantic colour role(s). Regenerate or review the model output.`);
-      const saved = updateFlavourSemanticColourMappings(flavoursRoot, id, mode, selected, validateSemanticMappings);
-      return sendJson(res, 200, { ok: true, flavour: saved, mode, reply: ai.reply, model: ai.model, completion: semanticCompletion(saved, mode), candidateSets: buildSemanticCandidateSets(saved, mode), status: status() });
+      const aiReview = buildMode === 'ai' ? (() => {
+        const selectionByBatch = new Map((ai.batchSelections || []).map(item => [item.batchId, item]));
+        const choiceCounts = {};
+        const families = batches.map(batch => {
+          const selection = selectionByBatch.get(batch.id) || {};
+          const deterministicOption = batch.options?.[0]?.id || 'O1';
+          const selectedOption = selection.optionId || null;
+          if (selectedOption) choiceCounts[selectedOption] = (choiceCounts[selectedOption] || 0) + 1;
+          return {
+            batchId: batch.id,
+            group: batch.group || null,
+            label: batch.label || batch.id,
+            deterministicOption,
+            selectedOption,
+            differedFromDeterministic: Boolean(selectedOption && selectedOption !== deterministicOption),
+            reason: String(selection.reason || '').trim()
+          };
+        });
+        return {
+          model: ai.model || null,
+          requestCount: Number(ai.requestCount || 0),
+          chunkSize: Number(ai.chunkSize || 0),
+          passes: Array.isArray(ai.passes) ? ai.passes : [],
+          totals: ai.totals || null,
+          choiceCounts,
+          differentFromDeterministic: families.filter(item => item.differedFromDeterministic).length,
+          familyCount: families.length,
+          families
+        };
+      })() : null;
+      const completed = completeSemanticSelections(sets, fixed, buildBaseline, { batchSelections: ai.batchSelections || [] });
+      if (completed.unresolved.length) {
+        throw new Error(`BufferCore has no legal Primitive candidate for ${completed.unresolved.length} Semantic colour role(s). Review the Primitive palette or Colour contract.`);
+      }
+      const saved = updateFlavourSemanticColourMappings(flavoursRoot, id, mode, completed.selected, validateSemanticMappings);
+      const savedSets = buildSemanticCandidateSets(saved, mode);
+      return sendJson(res, 200, {
+        ok: true,
+        flavour: saved,
+        mode,
+        reply: ai.reply || '',
+        model: ai.model || null,
+        buildProvenance: {
+          mode: buildMode,
+          elapsedMs: Date.now() - startedAt,
+          batchCount: batches.length,
+          aiSelectionCount: buildMode === 'ai' ? new Set((ai.batchSelections || []).map(item => item.batchId)).size : 0,
+          deterministicDefaultCount: buildMode === 'ai' ? 0 : batches.length,
+          aiRequestCount: buildMode === 'ai' ? Number(ai.requestCount || 1) : 0,
+          aiDifferentFromDeterministic: aiReview?.differentFromDeterministic || 0,
+          aiChoiceCounts: aiReview?.choiceCounts || {},
+          aiPromptEvalCount: aiReview?.totals?.prompt_eval_count || 0,
+          aiEvalCount: aiReview?.totals?.eval_count || 0,
+          freshBuild
+        },
+        aiReview,
+        batchSelections: ai.batchSelections || [],
+        completion: semanticCompletion(saved, mode),
+        candidateSets: savedSets,
+        findings: semanticFindings(saved, mode, saved.semanticMappings?.colour?.[mode] || {}),
+        status: status()
+      });
     }
     if (req.method === 'PATCH' && req.url.match(/^\/api\/flavours\/[^/]+\/colour-semantics\/(light|dark)$/)) {
       const parts = req.url.split('/');
@@ -298,7 +390,8 @@ const server = http.createServer(async (req, res) => {
       const flavour = getFlavourDocument(flavoursRoot, id);
       if (!flavour) return sendJson(res, 404, { ok: false, error: 'Flavour not found.' });
       const saved = updateFlavourSemanticColourMappings(flavoursRoot, id, mode, data.mappings || {}, validateSemanticMappings);
-      return sendJson(res, 200, { ok: true, flavour: saved, completion: semanticCompletion(saved, mode), status: status() });
+      const mappings = saved.semanticMappings?.colour?.[mode] || {};
+      return sendJson(res, 200, { ok: true, flavour: saved, completion: semanticCompletion(saved, mode), candidateSets: buildSemanticCandidateSets(saved, mode), findings: semanticFindings(saved, mode, mappings), status: status() });
     }
     if (req.method === 'GET' && req.url.startsWith('/api/flavours/')) {
       const id = decodeURIComponent(req.url.slice('/api/flavours/'.length));

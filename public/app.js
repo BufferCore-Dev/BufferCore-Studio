@@ -9,7 +9,9 @@ let aiProposal = null;
 let aiHistory = [];
 let currentColourStage = Math.max(1,Math.min(9,Number(localStorage.getItem('buffercore.studio.colourStage')||1)));
 let semanticState = { light:null, dark:null };
+let semanticGroupFocus = { light: localStorage.getItem('buffercore.studio.semanticGroup.light') || 'Canvas', dark: localStorage.getItem('buffercore.studio.semanticGroup.dark') || 'Canvas' };
 let semanticBusy = false;
+let semanticBuildStatus = { light:null, dark:null };
 let colourSemanticPreview = null;
 let currentTypographyStage = Math.max(1,Math.min(7,Number(localStorage.getItem('buffercore.studio.typographyStage')||1)));
 let typographyState = null;
@@ -32,6 +34,89 @@ function short(c){return c?c.slice(0,10):'—'}
 function slug(v){return String(v||'').trim().toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
 function titleCase(v){return String(v||'').replace(/^--bc-/,'').split(/[-_/]+/).filter(Boolean).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(' ')}
 async function api(url,opts={}){const r=await fetch(url,{headers:{'content-type':'application/json'},...opts});const d=await r.json();if(!r.ok||d.ok===false)throw new Error(d.error||'Request failed');return d}
+
+let studioDialogResolve = null;
+function ensureStudioFeedback(){
+  if(!document.querySelector('#studioDialog')){
+    document.body.insertAdjacentHTML('beforeend',`
+      <div class="studio-dialog-backdrop" id="studioDialog" aria-hidden="true">
+        <section class="studio-dialog" role="dialog" aria-modal="true" aria-labelledby="studioDialogTitle">
+          <button class="studio-dialog-close" type="button" data-studio-dialog-close aria-label="Close">×</button>
+          <div class="studio-dialog-icon" data-studio-dialog-icon>!</div>
+          <div class="studio-dialog-copy">
+            <span class="studio-dialog-eyebrow" data-studio-dialog-eyebrow>BufferCore Studio</span>
+            <h2 id="studioDialogTitle" data-studio-dialog-title>Notice</h2>
+            <p data-studio-dialog-message></p>
+            <div class="studio-dialog-detail hidden" data-studio-dialog-detail></div>
+            <label class="studio-dialog-field hidden" data-studio-dialog-field>
+              <span data-studio-dialog-field-label>Value</span>
+              <input type="text" data-studio-dialog-input>
+            </label>
+          </div>
+          <footer class="studio-dialog-actions">
+            <button class="secondary hidden" type="button" data-studio-dialog-cancel>Cancel</button>
+            <button class="primary" type="button" data-studio-dialog-confirm>OK</button>
+          </footer>
+        </section>
+      </div>
+      <div class="studio-toast-region" id="studioToasts" aria-live="polite" aria-atomic="false"></div>
+    `);
+    const host=document.querySelector('#studioDialog');
+    const settle=(value)=>{if(!studioDialogResolve)return;const resolve=studioDialogResolve;studioDialogResolve=null;host.classList.remove('open');host.setAttribute('aria-hidden','true');resolve(value)};
+    host.querySelector('[data-studio-dialog-close]').onclick=()=>settle(null);
+    host.querySelector('[data-studio-dialog-cancel]').onclick=()=>settle(null);
+    host.querySelector('[data-studio-dialog-confirm]').onclick=()=>{const field=host.querySelector('[data-studio-dialog-field]');settle(field.classList.contains('hidden')?true:host.querySelector('[data-studio-dialog-input]').value)};
+    host.addEventListener('click',e=>{if(e.target===host)settle(null)});
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&host.classList.contains('open'))settle(null)});
+  }
+}
+function studioToast(message,{tone='success',title=''}={}){
+  ensureStudioFeedback();
+  const region=document.querySelector('#studioToasts');
+  const item=document.createElement('div');
+  item.className=`studio-toast ${tone}`;
+  item.innerHTML=`<span class="studio-toast-mark">${tone==='success'?'✓':tone==='warning'?'!':'i'}</span><div>${title?`<b>${escapeHtml(title)}</b>`:''}<p>${escapeHtml(message)}</p></div><button type="button" aria-label="Dismiss">×</button>`;
+  item.querySelector('button').onclick=()=>item.remove();
+  region.appendChild(item);
+  requestAnimationFrame(()=>item.classList.add('show'));
+  setTimeout(()=>{item.classList.remove('show');setTimeout(()=>item.remove(),180)},4200);
+}
+function studioDialog({title='Notice',message='',detail='',tone='warning',eyebrow='BufferCore Studio',confirmLabel='OK',cancelLabel='',inputLabel='',inputValue=''}={}){
+  ensureStudioFeedback();
+  const host=document.querySelector('#studioDialog');
+  const dialog=host.querySelector('.studio-dialog');
+  dialog.dataset.tone=tone;
+  host.querySelector('[data-studio-dialog-eyebrow]').textContent=eyebrow;
+  host.querySelector('[data-studio-dialog-title]').textContent=title;
+  host.querySelector('[data-studio-dialog-message]').textContent=message;
+  const detailEl=host.querySelector('[data-studio-dialog-detail]');
+  detailEl.classList.toggle('hidden',!detail);
+  detailEl.textContent=detail||'';
+  const field=host.querySelector('[data-studio-dialog-field]');
+  const input=host.querySelector('[data-studio-dialog-input]');
+  field.classList.toggle('hidden',!inputLabel);
+  host.querySelector('[data-studio-dialog-field-label]').textContent=inputLabel||'Value';
+  input.value=inputValue||'';
+  const cancel=host.querySelector('[data-studio-dialog-cancel]');
+  cancel.classList.toggle('hidden',!cancelLabel);
+  cancel.textContent=cancelLabel||'Cancel';
+  const confirm=host.querySelector('[data-studio-dialog-confirm]');
+  confirm.textContent=confirmLabel||'OK';
+  host.classList.add('open');
+  host.setAttribute('aria-hidden','false');
+  requestAnimationFrame(()=>{(inputLabel?input:confirm).focus();if(inputLabel)input.select()});
+  return new Promise(resolve=>{studioDialogResolve=resolve});
+}
+function errorDialog(error,{title='Could not complete that',detail=''}={}){
+  return studioDialog({title,message:error?.message||String(error||'Something went wrong.'),detail,tone:'danger',confirmLabel:'OK'});
+}
+function confirmDialog(message,{title='Are you sure?',confirmLabel='Continue',cancelLabel='Cancel',tone='warning',detail=''}={}){
+  return studioDialog({title,message,detail,tone,confirmLabel,cancelLabel});
+}
+function promptDialog(message,{title='Enter a value',label='Value',value='',confirmLabel='Continue',cancelLabel='Cancel'}={}){
+  return studioDialog({title,message,tone:'info',confirmLabel,cancelLabel,inputLabel:label,inputValue:value});
+}
+
 
 function setView(name){$$('.view').forEach(v=>v.classList.remove('active'));$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===name));$(`#view-${name}`).classList.add('active');localStorage.setItem('buffercore.studio.view',name)}
 $$('.nav-item').forEach(button=>button.onclick=()=>setView(button.dataset.view));
@@ -80,7 +165,7 @@ function colourStageMeta(){return[
   {id:3,key:'neutral',title:'Neutral',copy:'Choose the character of Neutral 50. Studio generates the absolute 0–100 scale around it.'},
   {id:4,key:'status',title:'Status',copy:'Choose Success, Warning, Error and Info bases; each receives its own generated tonal family.'},
   {id:5,key:'interaction',title:'Interaction',copy:'Set direct-purpose link, visited and focus colours for normal and inverse contexts.'},
-  {id:6,key:'primitive-review',title:'Primitive Review',copy:'Review and approve the source palette before assigning Semantic jobs.'},
+  {id:6,key:'primitive-review',title:'Meaning',copy:'Review the complete source palette, then see exactly how those Primitive families are allowed to become Semantic design material before Light and Dark diverge.'},
   {id:7,key:'semantic-light',title:'Light Semantics',copy:'BufferCore constrains the legal Primitive sources; AI chooses the best legal source for each Light Semantic role.'},
   {id:8,key:'semantic-dark',title:'Dark Semantics',copy:'Generate the Dark mappings independently within the same hard BufferCore rules.'},
   {id:9,key:'final-review',title:'Colour Review',copy:'Review Primitive material and both Semantic modes together before leaving Colour.'}
@@ -89,7 +174,17 @@ function setColourStage(stage){currentColourStage=Math.max(1,Math.min(9,Number(s
 function stageSourceTokens(key){return SOURCE_GROUPS[key]||[]}
 function stageCompletion(key){const tokens=stageSourceTokens(key);const complete=tokens.filter(colourSourceValue).length;return{complete,total:tokens.length}}
 function semanticMeta(mode){const state=semanticState[mode];return state?.completion||{mapped:0,mappable:0,complete:false}}
-function colourMiniNav(){const metas=[['identity','Identity'],['ground','Ground'],['neutral','Neutral'],['status','Status'],['interaction','Interaction'],['primitive-review','Primitive Review'],['semantic-light','Light'],['semantic-dark','Dark'],['final-review','Review']];return`<nav class="colour-mini-nav colour-mini-nav-nine">${metas.map(([key,title],i)=>{const id=i+1;let label='';let done=false;if(id<=5){const c=stageCompletion(key);label=`${c.complete}/${c.total}`;done=c.total>0&&c.complete===c.total}else if(id===6){const c=colourCompletion(currentFlavour?.overrides||{});label=`${c.complete}/${c.total} sources`;done=c.complete===c.total}else if(id===7||id===8){const c=semanticMeta(id===7?'light':'dark');label=`${c.mapped||0}/${c.mappable||0}`;done=Boolean(c.complete)}else{const l=semanticMeta('light'),d=semanticMeta('dark');done=Boolean(l.complete&&d.complete);label=done?'Complete':'Review'}return`<button type="button" class="colour-mini-step ${currentColourStage===id?'active':''} ${done?'complete':''}" data-colour-stage="${id}"><span>${String(id).padStart(2,'0')}</span><strong>${title}</strong><small>${done?'Complete':label}</small></button>`}).join('')}</nav>`}
+function colourMiniNav(){
+  const total=colourCompletion(currentFlavour?.overrides||{}),l=semanticMeta('light'),d=semanticMeta('dark');
+  const top=[
+    {id:1,title:'Palette',meta:`${total.complete}/${total.total} sources`,done:total.complete===total.total,active:currentColourStage<=5},
+    {id:6,title:'Meaning',meta:'Review source intent',done:total.complete===total.total,active:currentColourStage===6},
+    {id:7,title:'Light',meta:`${l.mapped||0}/${l.mappable||0}`,done:!!l.complete,active:currentColourStage===7},
+    {id:8,title:'Dark',meta:`${d.mapped||0}/${d.mappable||0}`,done:!!d.complete,active:currentColourStage===8},
+    {id:9,title:'Review',meta:l.complete&&d.complete?'Complete':'Inspect system',done:!!(l.complete&&d.complete),active:currentColourStage===9}
+  ];
+  const palette=[['identity','Identity'],['ground','Ground'],['neutral','Neutral'],['status','Status'],['interaction','Interaction']];
+  return`<nav class="colour-flow-nav" aria-label="Colour builder progress"><div class="colour-flow-primary">${top.map((item,i)=>`<button type="button" class="colour-flow-phase ${item.active?'active':''} ${item.done?'complete':''}" data-colour-stage="${item.id}"><span>${String(i+1).padStart(2,'0')}</span><b>${item.title}</b><small>${item.done?'Complete':item.meta}</small></button>`).join('')}</div>${currentColourStage<=5?`<div class="colour-flow-subnav">${palette.map(([key,title],i)=>{const c=stageCompletion(key);return`<button type="button" class="${currentColourStage===i+1?'active':''} ${c.complete===c.total?'complete':''}" data-colour-stage="${i+1}"><span>${String(i+1).padStart(2,'0')}</span><b>${title}</b><small>${c.complete}/${c.total}</small></button>`}).join('')}</div>`:''}</nav>`}
 function stageBody(meta){if(meta.key==='identity')return`<div class="source-grid identity-sources">${SOURCE_GROUPS.identity.map((token,i)=>sourceCard(token,{description:`Expressive family ${i+1}`})).join('')}</div>`;
  if(meta.key==='ground')return`<div class="source-grid ground-sources">${SOURCE_GROUPS.ground.map((token,i)=>sourceCard(token,{family:false,description:`Canvas ${['Primary','Secondary','Tertiary'][i]} source`})).join('')}</div><div class="ground-preview">${SOURCE_GROUPS.ground.map((token,i)=>{const v=colourSourceValue(token);return`<div style="${v?`background:${escapeHtml(v)}`:''}"><span>Canvas ${['Primary','Secondary','Tertiary'][i]}</span><b>${v||'Unset'}</b></div>`}).join('')}</div>`;
  if(meta.key==='neutral')return`<div class="neutral-builder">${sourceCard('--bc-color-neutral-50',{family:false,description:'The character anchor for the absolute neutral scale'})}<section class="neutral-scale-preview"><header><strong>Generated Neutral 0–100</strong><span>White and black endpoints stay absolute; the centre can be warm, cool or chromatic.</span></header>${paletteStripFromValues(familyValues('--bc-color-neutral-50'),true)}</section></div>`;
@@ -99,15 +194,382 @@ function stageBody(meta){if(meta.key==='identity')return`<div class="source-grid
  if(meta.key==='semantic-light')return renderSemanticStage('light');
  if(meta.key==='semantic-dark')return renderSemanticStage('dark');
  return renderFinalColourReview();}
-function renderPrimitiveReview(){const c=colourCompletion(currentFlavour?.overrides||{});const sections=[['Identity',SOURCE_GROUPS.identity],['Ground',SOURCE_GROUPS.ground],['Neutral',SOURCE_GROUPS.neutral],['Status',SOURCE_GROUPS.status],['Interaction',SOURCE_GROUPS.interaction]];return`<div class="colour-review"><section class="palette-completion ${c.complete===c.total?'complete':''}"><div><span class="eyebrow">Primitive palette</span><h3>${c.complete===c.total?'Palette ready for Semantic generation':'Finish the source palette'}</h3><p>${c.complete} of ${c.total} required source colours are set. Tone maths remains deterministic; the next stages use AI only to select legal Primitive sources for Semantic jobs.</p></div><strong>${c.complete}/${c.total}</strong></section><div class="review-palette-sections">${sections.map(([title,tokens])=>`<section><header><strong>${title}</strong><span>${tokens.filter(colourSourceValue).length}/${tokens.length} sources</span></header>${tokens.map(token=>`<div class="review-family"><b>${escapeHtml(sourceLabel(token))}</b>${paletteStripFromValues(familyValues(token),false)}</div>`).join('')}</section>`).join('')}</div>${c.complete===c.total?'<div class="semantic-callout"><strong>Next: generate Light Semantics</strong><p>Canvas and other hard mappings are automatic. Roles with several legal candidates are handed to Local AI for constrained design judgement.</p></div>':''}</div>`}
-function semanticGroups(state){const sets=state?.candidateSets||[];const mappings=state?.mappings||{};const order=['Tones / Design Material','Fill','Text','Border','Surface','Canvas','Interaction'];return order.map(group=>[group,sets.filter(s=>s.group===group)]).filter(([,items])=>items.length).map(([group,items])=>`<section class="semantic-group"><header><strong>${escapeHtml(group.replace('Tones / Design Material','Tones'))}</strong><span>${items.filter(i=>mappings[i.token]).length}/${items.filter(i=>i.candidates.length).length}</span></header><div class="semantic-mapping-list">${items.map(set=>{const selected=mappings[set.token]||'';return`<label class="semantic-mapping ${set.fixed?'fixed':''}"><span><b>${escapeHtml(set.name)}</b><code>${escapeHtml(set.token)}</code></span><select data-semantic-target="${escapeHtml(set.token)}" ${set.fixed||!set.candidates.length?'disabled':''}><option value="">${set.candidates.length?'Choose Primitive…':'No legal Primitive available'}</option>${set.candidates.map(source=>`<option value="${escapeHtml(source)}" ${source===selected?'selected':''}>${escapeHtml(source.replace('--bc-color-',''))}</option>`).join('')}</select><small>${set.fixed?'Fixed by BufferCore contract':set.candidates.length>1?`${set.candidates.length} legal candidates · AI/design choice`:'Single legal source'}</small></label>`}).join('')}</div></section>`).join('')}
-function renderSemanticStage(mode){const c=colourCompletion(currentFlavour?.overrides||{});const state=semanticState[mode];if(c.complete!==c.total)return`<div class="semantic-callout warning"><strong>Primitive palette incomplete</strong><p>Finish all required source colours before generating ${mode} Semantics.</p><button class="secondary" data-colour-stage="6">Return to Primitive Review</button></div>`;if(!state)return`<div class="semantic-loading">Loading ${mode} Semantic contract…</div>`;const comp=state.completion||{};return`<div class="semantic-builder"><section class="semantic-generation-head"><div><span class="eyebrow">${mode} mode</span><h3>${comp.complete?'Semantic mappings complete':'Generate Semantic mappings'}</h3><p>BufferCore supplies the legal candidate set for every role. Fixed mappings are applied automatically; Local AI may only choose from the listed Primitive candidates.</p></div><div class="semantic-generation-actions"><span>${comp.mapped||0}/${comp.mappable||0}</span><button class="primary" type="button" data-generate-semantics="${mode}" ${semanticBusy?'disabled':''}>${semanticBusy?'Generating…':`Generate ${mode==='light'?'Light':'Dark'} with AI`}</button></div></section><div class="semantic-ai-note"><strong>No raw colours are generated here.</strong><span>Each result is Semantic token → existing Primitive token. You can manually change any non-fixed choice before saving.</span></div>${semanticGroups(state)}</div>`}
-function renderFinalColourReview(){const c=colourCompletion(currentFlavour?.overrides||{}),l=semanticMeta('light'),d=semanticMeta('dark');return`<div class="colour-review"><section class="palette-completion ${(c.complete===c.total&&l.complete&&d.complete)?'complete':''}"><div><span class="eyebrow">Colour system</span><h3>${c.complete===c.total&&l.complete&&d.complete?'Colour Flavour complete':'Colour still needs attention'}</h3><p>Primitive material: ${c.complete}/${c.total}. Light mappings: ${l.mapped}/${l.mappable}. Dark mappings: ${d.mapped}/${d.mappable}.</p></div><strong>${l.complete&&d.complete?'✓':'!'}</strong></section><div class="semantic-mode-summary"><article><span>Light</span><b>${l.mapped}/${l.mappable}</b><small>${l.complete?'Complete':'Needs generation/review'}</small></article><article><span>Dark</span><b>${d.mapped}/${d.mappable}</b><small>${d.complete?'Complete':'Needs generation/review'}</small></article></div><section class="semantic-preview"><header><div><span class="eyebrow">Resolved result</span><h3>Light + Dark implementation preview</h3><p>The Engine resolves these saved mappings into real Semantic aliases for Figma and CSS.</p></div><button class="secondary" type="button" id="refreshColourSemantic">Refresh preview</button></header><div id="semanticPreviewBody"><div class="source-empty">Loading resolved semantics…</div></div></section></div>`}
+function renderPrimitiveReview(){const c=colourCompletion(currentFlavour?.overrides||{});const sections=[['Identity',SOURCE_GROUPS.identity],['Ground',SOURCE_GROUPS.ground],['Neutral',SOURCE_GROUPS.neutral],['Status',SOURCE_GROUPS.status],['Interaction',SOURCE_GROUPS.interaction]];const bridge=[['Primary','Identity Ramp 1','Primary design material'],['Secondary','Identity Ramp 2','Secondary design material'],['Accent','Identity Ramp 3','Accent design material'],['Neutral','Neutral 0–100','General structural/readable material'],['Ground','Ground Ramp 1/2/3','Canvas only']];return`<div class="colour-review meaning-stage"><section class="palette-completion ${c.complete===c.total?'complete':''}"><div><span class="eyebrow">02 · Meaning</span><h3>${c.complete===c.total?'Give the source palette purpose':'Finish the source palette first'}</h3><p>${c.complete} of ${c.total} required source colours are set. This bridge does not invent new colours: it defines what each Primitive family may be used for before mode-specific Semantic selection begins.</p></div><strong>${c.complete}/${c.total}</strong></section><section class="meaning-map"><header><div><span class="eyebrow">Primitive → design material</span><h3>What each family is allowed to mean</h3></div></header><div>${bridge.map(([role,source,purpose])=>`<article><span>${escapeHtml(role)}</span><b>${escapeHtml(source)}</b><small>${escapeHtml(purpose)}</small></article>`).join('')}</div><p>Ground remains Canvas-only. General Surfaces come from Neutral. Identity and Status families stay inside their own family when used for coloured Surface, Fill, Border and readable Strong Text roles.</p></section><details class="meaning-palette-review"><summary>Review the source palette</summary><div class="review-palette-sections">${sections.map(([title,tokens])=>`<section><header><strong>${title}</strong><span>${tokens.filter(colourSourceValue).length}/${tokens.length} sources</span></header>${tokens.map(token=>`<div class="review-family"><b>${escapeHtml(sourceLabel(token))}</b>${paletteStripFromValues(familyValues(token),false)}</div>`).join('')}</section>`).join('')}</div></details>${c.complete===c.total?'<div class="semantic-callout"><strong>Next: build Light</strong><p>BufferCore now constructs coherent family options using contrast + OKLab/OKLCH evidence. Local AI judges between already-good options instead of mapping 150 roles independently.</p></div>':''}</div>`}
+function semanticHexFor(state,semanticToken){let primitive=state?.mappings?.[semanticToken]||'';if(!primitive){const fixed=(state?.candidateSets||[]).find(s=>s.token===semanticToken&&s.fixed&&s.candidates?.length===1);primitive=fixed?.candidates?.[0]||''}return primitive?colourSourceValue(primitive):''}
+function contrastRatio(a,b){const hex=v=>normalizeHex(v);a=hex(a);b=hex(b);if(!a||!b)return null;const lum=h=>{const rgb=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]};const l1=lum(a),l2=lum(b);return(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05)}
+function ratioNumber(value){const n=parseFloat(String(value||'').replace(':1',''));return Number.isFinite(n)?n:null}
+function accessibilityRule(set){return set?.accessibilityMinimum?{minimum:set.accessibilityMinimum,recommended:set.accessibilityRecommended||''}:null}
+function semanticContrastContext(state,set){if(!accessibilityRule(set))return null;const inverse=/Inverse/i.test(set.name||'');const target=inverse?'--bc-color-surface-general-primary-strong':'--bc-color-surface-general-primary';let value='';if(set.accessibilityBackground)value=colourSourceValue(set.accessibilityBackground);if(!value)value=semanticHexFor(state,target);if(!value)return null;return{target,value,label:inverse?'Surface General Primary Strong':'Surface General Primary'}}
+function accessibilityStatus(state,set,selected){const rule=accessibilityRule(set);if(!rule)return null;const minimum=ratioNumber(rule.minimum),recommended=ratioNumber(rule.recommended);const foreground=selected?colourSourceValue(selected):'';const context=semanticContrastContext(state,set);const ratio=foreground&&context?contrastRatio(foreground,context.value):null;if(ratio===null||minimum===null)return{stateClass:'pending',label:'PENDING',detail:'Background unavailable',ratio:null,rule,context,foreground};if(recommended!==null&&ratio>=recommended)return{stateClass:'recommended',label:'PASS',detail:'Recommended',ratio,rule,context,foreground};if(ratio>=minimum){const familyPreserving=set?.group==='Text'&&/ Strong(?: Inverse)?$/i.test(set?.name||'')&&!/Neutral/i.test(set?.name||'');return{stateClass:'minimum',label:'PASS',detail:familyPreserving?'Minimum · family-preserving':'Minimum only',ratio,rule,context,foreground};}return{stateClass:'fail',label:'FAIL',detail:'Below minimum',ratio,rule,context,foreground}}
+function semanticAccessibility(state,set,selected){const result=accessibilityStatus(state,set,selected);if(!result)return'';const{stateClass,label,detail,ratio,rule,context,foreground}=result;const preview=context&&foreground?`<div class="semantic-contrast-preview" style="background:${escapeHtml(context.value)};color:${escapeHtml(foreground)}"><b>Aa</b><span>${escapeHtml(context.label)}</span></div>`:'';return`<div class="semantic-accessibility ${stateClass}">${preview}<div class="semantic-accessibility-copy"><div class="semantic-accessibility-head"><strong>${label}</strong><b>${ratio!==null?`${ratio.toFixed(2)}:1 · ${detail}`:detail}</b></div><div class="semantic-accessibility-thresholds"><span>Minimum <b>${escapeHtml(rule.minimum)}</b></span>${rule.recommended?`<span>Recommended <b>${escapeHtml(rule.recommended)}</b></span>`:''}</div>${context?'':`<small>Map the representative Surface before this can be tested.</small>`}</div></div>`}
+function semanticAccessibilityBadge(state,set,selected){const result=accessibilityStatus(state,set,selected);if(!result)return'';const ratio=result.ratio!==null?` ${result.ratio.toFixed(2)}:1`:'';return`<span class="semantic-a11y-badge ${result.stateClass}" title="${escapeHtml(result.detail)}">${result.label}${ratio}</span>`}
+function semanticSubgroup(group,set){const n=set.name.replace(/^(Fill|Border|Text|Surface)\s+/i,'').trim();const first=n.split(/\s+/)[0]||'General';if(group==='Fill'||group==='Border'){if(['Success','Warning','Error','Info'].includes(first))return'Status';return first}if(group==='Text'){if(['Primary','Secondary','Accent'].includes(first))return first;if(['Success','Warning','Error','Info'].includes(first))return'Status';return'General'}if(group==='Surface'){if(first==='General')return'General';if(first==='Identity')return'Identity';return'Status'}if(group==='Tones / Design Material'){const x=set.name.replace(/^Tone(?:s)?\s+/i,'').trim();return x.split(/\s+/)[0]||'Other'}return''}
+function semanticRuleDetails(set){const rules=[set.purpose&&`<div><b>Purpose</b><span>${escapeHtml(set.purpose)}</span></div>`,set.context&&`<div><b>Context</b><span>${escapeHtml(set.context)}</span></div>`,set.sourceRule&&`<div><b>Primitive source</b><span>${escapeHtml(set.sourceRule)}</span></div>`,set.appearanceRule&&`<div><b>Appearance</b><span>${escapeHtml(set.appearanceRule)}</span></div>`,set.relationshipRule&&`<div><b>Relationship</b><span>${escapeHtml(set.relationshipRule)}</span></div>`,set.notes&&`<div><b>Notes</b><span>${escapeHtml(set.notes)}</span></div>`].filter(Boolean).join('');if(!rules)return'';return`<details class="semantic-rules"><summary>Role rules</summary><div class="semantic-rules-grid">${rules}</div></details>`}
+function semanticMappingRow(state,set,mappings){const selected=mappings[set.token]||(set.fixed&&set.candidates?.length===1?set.candidates[0]:'');const swatch=selected?colourSourceValue(selected):'';const source=selected?selected.replace('--bc-color-',''):'';const choice=set.fixed?`<div class="semantic-fixed-source">${selected?`<i style="background:${escapeHtml(swatch)}"></i><span><b>${escapeHtml(source)}</b><small>${escapeHtml(swatch||'')}</small></span>`:'<span>Fixed source unavailable</span>'}<em>Fixed</em></div>`:`<div class="semantic-choice-control"><select data-semantic-target="${escapeHtml(set.token)}" aria-label="Primitive source for ${escapeHtml(set.name)}"><option value="">${set.candidates.length?'Choose Primitive…':'No legal Primitive available'}</option>${set.candidates.map(sourceToken=>`<option value="${escapeHtml(sourceToken)}" ${sourceToken===selected?'selected':''}>${escapeHtml(sourceToken.replace('--bc-color-',''))}</option>`).join('')}</select>${selected?`<div class="semantic-source-value" title="${escapeHtml(source)} ${escapeHtml(swatch||'')}"><i style="background:${escapeHtml(swatch)}"></i><b>${escapeHtml(swatch||'')}</b></div>`:''}</div>`;return`<label class="semantic-mapping ${set.fixed?'fixed':''}" title="${escapeHtml(set.token)}"><span class="semantic-role"><i class="semantic-role-swatch ${swatch?'':'empty'}" style="${swatch?`background:${escapeHtml(swatch)}`:''}"></i><span><b>${escapeHtml(set.name)}</b>${semanticAccessibilityBadge(state,set,selected)}</span></span><div class="semantic-choice">${choice}${semanticAccessibility(state,set,selected)}${semanticRuleDetails(set)}</div></label>`}
+function semanticGroups(state,onlyGroup=null){const sets=state?.candidateSets||[];const mappings=state?.mappings||{};const order=['Canvas','Surface','Fill','Border','Text','Interaction','Tones / Design Material'];return order.filter(group=>!onlyGroup||group===onlyGroup).map(group=>[group,sets.filter(s=>s.group===group)]).filter(([,items])=>items.length).map(([group,items])=>{const title=group.replace('Tones / Design Material','Tones');const mapped=items.filter(i=>mappings[i.token]).length;const mappable=items.filter(i=>i.candidates.length).length;const grouped=new Map();for(const set of items){const sub=semanticSubgroup(group,set)||'';if(!grouped.has(sub))grouped.set(sub,[]);grouped.get(sub).push(set)}const content=[...grouped.entries()].map(([sub,subItems])=>`${sub?`<div class="semantic-subgroup-head"><strong>${escapeHtml(sub)}</strong><span>${subItems.filter(i=>mappings[i.token]).length}/${subItems.filter(i=>i.candidates.length).length}</span></div>`:''}<div class="semantic-mapping-list">${subItems.map(set=>semanticMappingRow(state,set,mappings)).join('')}</div>`).join('');return`<section class="semantic-group ${group==='Fill'?'semantic-group-fill':''}"><header><div><strong>${escapeHtml(title)}</strong><small>Technical mapping editor · legal Primitive sources only.</small></div><span>${mapped}/${mappable}</span></header>${content}</section>`}).join('')}
+function semanticGroupOrder(state){const available=new Set((state?.candidateSets||[]).map(s=>s.group));return['Canvas','Surface','Fill','Border','Text','Interaction','Tones / Design Material'].filter(g=>available.has(g))}
+function semanticGroupTabs(mode,state){const groups=semanticGroupOrder(state);if(!groups.includes(semanticGroupFocus[mode]))semanticGroupFocus[mode]=groups[0]||'Canvas';return`<nav class="semantic-chapter-tabs">${groups.map((group,i)=>{const title=group.replace('Tones / Design Material','Tones');const items=(state.candidateSets||[]).filter(s=>s.group===group),mapped=items.filter(s=>state.mappings?.[s.token]).length;return`<button type="button" class="${semanticGroupFocus[mode]===group?'active':''}" data-semantic-group="${escapeHtml(group)}" data-semantic-mode="${mode}"><span>${String(i+1).padStart(2,'0')}</span><b>${escapeHtml(title)}</b><small>${mapped}/${items.filter(s=>s.candidates.length).length}</small></button>`}).join('')}</nav>`}
+function semanticVisualLane(state,group){const sets=(state?.candidateSets||[]).filter(s=>s.group===group),mappings=state?.mappings||{};const buckets=new Map();for(const set of sets){const sub=semanticSubgroup(group,set)||'General';if(!buckets.has(sub))buckets.set(sub,[]);buckets.get(sub).push(set)}return`<section class="semantic-visual-review"><header><div><span class="eyebrow">Visual hierarchy</span><h3>${escapeHtml(group.replace('Tones / Design Material','Tones'))}</h3><p>Review relationships first. Open Technical mappings only when you need to make a manual exception.</p></div></header><div class="semantic-family-lanes">${[...buckets.entries()].map(([label,items])=>`<article><header><strong>${escapeHtml(label)}</strong></header><div class="semantic-family-strip">${items.map(set=>{const source=mappings[set.token]||(set.fixed&&set.candidates?.length===1?set.candidates[0]:'');const value=source?colourSourceValue(source):'';const a11y=source?accessibilityStatus(state,set,source):null;return`<div class="semantic-family-chip"><i style="${value?`background:${escapeHtml(value)}`:''}"></i><span><b>${escapeHtml(set.name.replace(/^(Fill|Border|Text|Surface)\s+/i,''))}</b><small>${escapeHtml(source?source.replace('--bc-color-',''):'Unmapped')}</small>${a11y?`<em class="${a11y.stateClass}">${a11y.label}${a11y.ratio!==null?` ${a11y.ratio.toFixed(2)}:1`:''}</em>`:''}</span></div>`}).join('')}</div></article>`).join('')}</div></section>`}
+function semanticFindingPanel(state,group){const findings=(state?.findings||[]).filter(f=>f.group===group||f.group==='Cross-family');if(!findings.length)return`<div class="semantic-quality-clear"><b>✓ No deterministic quality warnings for this chapter</b><span>Accessibility, sibling separation and family character checks are clear.</span></div>`;return`<section class="semantic-quality-findings"><header><b>${findings.length} design-quality signal${findings.length===1?'':'s'}</b></header>${findings.map(f=>`<article><strong>${escapeHtml(f.issue)}</strong><span>${escapeHtml(f.recommendation||'')}</span></article>`).join('')}</section>`}
+
+function semanticAccessibilitySummary(mode){
+  const state=semanticState[mode];
+  const sets=state?.candidateSets||[],mappings=state?.mappings||{};
+  const rows=sets.filter(set=>accessibilityRule(set)).map(set=>{
+    const selected=mappings[set.token]||(set.fixed&&set.candidates?.length===1?set.candidates[0]:'');
+    return{set,selected,result:accessibilityStatus(state,set,selected)}
+  });
+  const summary={total:rows.length,pass:0,minimum:0,recommended:0,fail:0,pending:0,fixable:0,fixedFail:0};
+  for(const row of rows){
+    const r=row.result;
+    if(!r||r.stateClass==='pending'){summary.pending++;continue}
+    if(r.stateClass==='fail'){summary.fail++;if(row.set.fixed)summary.fixedFail++;else if(row.set.candidates?.length)summary.fixable++;continue}
+    summary.pass++;
+    if(r.stateClass==='minimum')summary.minimum++;
+    if(r.stateClass==='recommended')summary.recommended++;
+  }
+  return summary;
+}
+async function fixSemanticAccessibility(mode){
+  const state=semanticState[mode];
+  if(!state||semanticBusy)return;
+  const mappings={...(state.mappings||{})};
+  let changed=0;
+  for(const set of state.candidateSets||[]){
+    if(set.fixed||!accessibilityRule(set)||!set.candidates?.length)continue;
+    const current=mappings[set.token]||'';
+    const currentResult=accessibilityStatus(state,set,current);
+    if(currentResult&&currentResult.stateClass!=='fail'&&currentResult.stateClass!=='pending')continue;
+    const replacement=set.candidates.find(candidate=>{
+      const result=accessibilityStatus(state,set,candidate);
+      return result&&result.stateClass!=='fail'&&result.stateClass!=='pending';
+    });
+    if(replacement&&replacement!==current){mappings[set.token]=replacement;changed++}
+  }
+  if(!changed)return;
+  semanticBusy=true;renderBuilder();
+  try{
+    const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`,{method:'PATCH',body:JSON.stringify({mappings})});
+    currentFlavour={...result.flavour,isNew:false};
+    semanticState[mode]=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`);
+    latest=result.status||latest;
+    $('#saveState').textContent='Saved';
+  }catch(e){await errorDialog(e,{title:'Could not repair accessibility issues'});}
+  finally{semanticBusy=false;renderAll(latest);renderBuilder()}
+}
+
+function semanticBuildProvenance(mode){
+  const p=semanticBuildStatus[mode]||semanticState[mode]?.buildProvenance;
+  if(!p)return'';
+  if(p.state==='building'){
+    return`<div class="semantic-build-provenance building"><strong>${p.buildMode==='ai'?'Local AI is reviewing family options…':'BufferCore is scoring deterministic options…'}</strong><span>${p.buildMode==='ai'?'This will only be labelled an AI build if the model actually completes.':'No AI is used for this build.'}</span></div>`;
+  }
+  if(p.state==='error'){
+    return`<div class="semantic-build-provenance error"><strong>${p.buildMode==='ai'?'AI build failed':'Build failed'}</strong><span>${escapeHtml(p.error||'')}</span></div>`;
+  }
+  const ai=p.mode==='ai';
+  const seconds=((p.elapsedMs||0)/1000).toFixed(1);
+  const choices=p.aiChoiceCounts||{};const choiceText=['O1','O2','O3'].filter(key=>choices[key]!==undefined).map(key=>`${key} ${choices[key]}`).join(' · ');return`<div class="semantic-build-provenance ${ai?'ai':'deterministic'}"><strong>${ai?'AI build verified':'Deterministic build'}</strong><span>${ai?`${escapeHtml(p.model||'Local model')} · ${p.aiSelectionCount||0}/${p.batchCount||0} AI decisions · ${p.aiRequestCount||0} passes · ${p.aiDifferentFromDeterministic||0} differed from deterministic${choiceText?` · ${choiceText}`:''} · ${seconds}s`:`${p.batchCount||0} family batches · ${seconds}s · no AI used`}</span></div>`;
+}
+function renderSemanticStage(mode){const c=colourCompletion(currentFlavour?.overrides||{});const state=semanticState[mode];if(c.complete!==c.total)return`<div class="semantic-callout warning"><strong>Primitive palette incomplete</strong><p>Finish all required source colours before generating ${mode} Semantics.</p><button class="secondary" data-colour-stage="6">Return to Meaning</button></div>`;if(!state)return`<div class="semantic-loading">Loading ${mode} Semantic contract…</div>`;const comp=state.completion||{},a11y=semanticAccessibilitySummary(mode),group=semanticGroupFocus[mode];const health=a11y.total?`<div class="semantic-a11y-summary ${a11y.fail?'has-fail':'all-pass'}"><span><b>${a11y.fail?`${a11y.fail} accessibility issue${a11y.fail===1?'':'s'}`:'Accessibility passes'}</b><small>${a11y.recommended} recommended · ${a11y.minimum} valid minimum-pass${a11y.pending?` · ${a11y.pending} pending`:''}</small></span>${a11y.fixedFail?`<small class="semantic-a11y-fixed-note">${a11y.fixedFail} fixed-source issue${a11y.fixedFail===1?'':'s'} must be corrected in Primitives.</small>`:''}</div>`:'';return`<div class="semantic-builder guided-semantic-workspace"><section class="semantic-generation-head"><div><span class="eyebrow">${mode} mode</span><h3>${comp.complete?'Semantic system ready for review':'Build the Semantic system'}</h3><p>BufferCore constructs coherent family options using real HEX, contrast and OKLab/OKLCH evidence. Local AI judges those options; deterministic best choices remain the fallback.</p></div><div class="semantic-generation-actions"><span>${comp.mapped||0}/${comp.mappable||0}</span><button class="ghost" type="button" data-reset-colour-set="semantic-group" data-semantic-mode="${mode}" data-semantic-group="${escapeHtml(group)}">Reset ${escapeHtml(group==='Tones / Design Material'?'Tones':group)}</button><button class="ghost semantic-mode-reset" type="button" data-reset-colour-set="semantic-mode" data-semantic-mode="${mode}">Reset ${mode==='light'?'Light':'Dark'}</button><button class="ghost" type="button" data-build-deterministic="${mode}" ${semanticBusy?'disabled':''}>Build deterministic</button><button class="primary" type="button" data-generate-semantics="${mode}" ${semanticBusy?'disabled':''}>${semanticBusy&&semanticBuildStatus[mode]?.buildMode==='ai'?'AI is reviewing…':`Build ${mode==='light'?'Light':'Dark'} with AI`}</button></div>${semanticBuildProvenance(mode)}</section>${health}${semanticGroupTabs(mode,state)}${semanticVisualLane(state,group)}${semanticFindingPanel(state,group)}<details class="semantic-technical"><summary><span>Technical mappings</span><small>Open for manual token-level adjustments</small></summary>${semanticGroups(state,group)}</details></div>`}
+
+function colourAiReviewCard(mode,label){
+  const state=semanticState?.[mode]||{};
+  const review=state.aiReview||semanticBuildStatus?.[mode]?.aiReview;
+  const provenance=state.buildProvenance||semanticBuildStatus?.[mode];
+  if(!review||provenance?.mode!=='ai')return'';
+  const choices=review.choiceCounts||{};
+  const totals=review.totals||{};
+  const seconds=((totals.wallMs||provenance?.elapsedMs||0)/1000).toFixed(1);
+  const generated=Number(totals.eval_count||0);
+  const prompted=Number(totals.prompt_eval_count||0);
+  const different=Number(review.differentFromDeterministic||0);
+  return`<article class="colour-ai-audit-card">
+    <header><div><span class="eyebrow">${escapeHtml(label)} AI audit</span><h4>${escapeHtml(review.model||provenance?.model||'Local model')}</h4></div><strong>${different}/${review.familyCount||0}</strong></header>
+    <p>AI changed ${different} of ${review.familyCount||0} family decisions from BufferCore's deterministic first choice.</p>
+    <div class="colour-ai-audit-stats">
+      <span><b>${review.requestCount||0}</b><small>Local AI passes</small></span>
+      <span><b>${prompted}</b><small>Prompt tokens</small></span>
+      <span><b>${generated}</b><small>Generated tokens</small></span>
+      <span><b>${seconds}s</b><small>AI wall time</small></span>
+    </div>
+    <div class="colour-ai-audit-choices"><span>O1 <b>${choices.O1||0}</b></span><span>O2 <b>${choices.O2||0}</b></span><span>O3 <b>${choices.O3||0}</b></span></div>
+    <details><summary>Family decisions</summary><div class="colour-ai-audit-families">${(review.families||[]).map(item=>`<div><span>${escapeHtml(item.label||item.batchId)}</span><b>${escapeHtml(item.selectedOption||'—')}${item.differedFromDeterministic?' ≠ ':' = '}${escapeHtml(item.deterministicOption||'—')}</b><small>${escapeHtml(item.reason||'No reason returned.')}</small></div>`).join('')}</div></details>
+  </article>`;
+}
+
+function renderFinalColourReview(){const c=colourCompletion(currentFlavour?.overrides||{}),l=semanticMeta('light'),d=semanticMeta('dark'),la=semanticState.light?semanticAccessibilitySummary('light'):{total:0,pass:0,fail:0,pending:0,recommended:0,minimum:0},da=semanticState.dark?semanticAccessibilitySummary('dark'):{total:0,pass:0,fail:0,pending:0,recommended:0,minimum:0},lf=semanticState.light?.findings||[],df=semanticState.dark?.findings||[];const attention=[...lf.map(f=>({...f,mode:'Light'})),...df.map(f=>({...f,mode:'Dark'}))];const hardIssues=la.fail+da.fail+la.pending+da.pending;const ready=c.complete===c.total&&l.complete&&d.complete&&!hardIssues&&!attention.length;const modeCard=(name,meta,a11y,findings)=>`<article class="colour-review-mode ${a11y.fail||a11y.pending||findings.length?'attention':'clear'}"><span>${name}</span><b>${meta.mapped}/${meta.mappable}</b><small>${meta.complete?'Mappings complete':'Needs generation/review'}</small><div><em>${a11y.pass}/${a11y.total} accessibility pass</em>${a11y.minimum?`<em>${a11y.minimum} minimum-only</em>`:''}${findings.length?`<em>${findings.length} visual finding${findings.length===1?'':'s'}</em>`:'<em>Visual hierarchy clear</em>'}</div></article>`;return`<div class="colour-review"><section class="palette-completion colour-review-completion ${ready?'complete':''}"><div><span class="eyebrow">05 · Review</span><h3>${ready?'Colour system ready':'Review the exceptions, not every token'}</h3><p>Primitive material: ${c.complete}/${c.total}. Light: ${l.mapped}/${l.mappable}. Dark: ${d.mapped}/${d.mappable}. BufferCore has already checked hard contrast, hierarchy, perceptual separation, family character and endpoint collapse.</p></div><div class="colour-review-completion-actions"><button class="ghost" type="button" data-export-colour-review>Export Review</button><strong>${ready?'✓':'!'}</strong></div></section><div class="semantic-mode-summary colour-review-mode-grid">${modeCard('Light',l,la,lf)}${modeCard('Dark',d,da,df)}</div><div class="colour-ai-audit-grid">${colourAiReviewCard('light','Light')}${colourAiReviewCard('dark','Dark')}</div>${attention.length||hardIssues?`<section class="colour-review-attention"><header><div><span class="eyebrow">Attention</span><h3>${hardIssues+attention.length} item${hardIssues+attention.length===1?'':'s'} worth checking</h3><p>These are the exceptions that need human judgement. The rest of the generated system already satisfies the executable Colour contract.</p></div></header>${hardIssues?`<div class="colour-review-hard-issues">${la.fail||la.pending?`<button type="button" data-colour-stage="7">Light · ${la.fail} failed · ${la.pending} pending</button>`:''}${da.fail||da.pending?`<button type="button" data-colour-stage="8">Dark · ${da.fail} failed · ${da.pending} pending</button>`:''}</div>`:''}<div class="semantic-quality-findings">${attention.map(f=>`<article><span>${escapeHtml(f.mode)} · ${escapeHtml(f.group||'System')}</span><b>${escapeHtml(f.issue)}</b><small>${escapeHtml(f.recommendation||'Review this relationship.')}</small></article>`).join('')}</div></section>`:`<section class="semantic-quality-clear"><b>No generated Colour issues need attention.</b><span>Hard accessibility minimums pass and the deterministic visual-quality review found no hierarchy, family-character or cross-family collision warnings.</span></section>`}<section class="semantic-preview"><header><div><span class="eyebrow">Resolved result</span><h3>Light + Dark implementation preview</h3><p>Review the actual resolved system visually. Technical mapping tables stay inside the Light/Dark chapters if you need a manual exception.</p></div><button class="secondary" type="button" id="refreshColourSemantic">Refresh preview</button></header><div id="semanticPreviewBody"><div class="source-empty">Loading resolved semantics…</div></div></section></div>`}
 async function loadSemanticMode(mode){if(currentFlavour?.isNew)return;try{semanticState[mode]=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`);renderBuilder()}catch(e){semanticState[mode]={error:e.message,candidateSets:[],mappings:{},completion:{}};renderBuilder()}}
-async function generateSemanticMode(mode){if(semanticBusy)return;semanticBusy=true;renderBuilder();try{const model=$('#aiModel')?.value||aiState.model;const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}/generate`,{method:'POST',body:JSON.stringify({model,message:`Generate the ${mode} Semantic colour system for ${currentFlavour.displayName}. Respect all BufferCore hard mappings and legal candidate bands. Choose for hierarchy, readability and coherent family character.`})});currentFlavour={...result.flavour,isNew:false};semanticState[mode]={...result,mappings:result.flavour.semanticMappings?.colour?.[mode]||{}};latest=result.status||latest;$('#saveState').textContent='Saved';renderAll(latest);renderBuilder()}catch(e){alert(e.message)}finally{semanticBusy=false;renderBuilder()}}
-async function saveSemanticManual(mode,target,source){const state=semanticState[mode];if(!state)return;const mappings={...(state.mappings||{})};if(source)mappings[target]=source;else delete mappings[target];try{const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`,{method:'PATCH',body:JSON.stringify({mappings})});currentFlavour={...result.flavour,isNew:false};semanticState[mode]={...state,mappings:currentFlavour.semanticMappings?.colour?.[mode]||{},completion:result.completion};latest=result.status||latest;$('#saveState').textContent='Saved';renderAll(latest);renderBuilder()}catch(e){alert(e.message)}}
-function wireColourSources(root){root.querySelectorAll('[data-source-token]').forEach(card=>{const token=card.dataset.sourceToken;const text=card.querySelector('.source-hex');const picker=card.querySelector('input[type=color]');const apply=value=>{const normal=normalizeHex(value);const all=colourAllTokenNames();if(!normal)return;const generated=generatedOverrides(token,normal,all);for(const [variable,generatedValue] of Object.entries(generated))currentFlavour.overrides[variable]=generatedValue;semanticState={light:null,dark:null};$('#saveState').textContent='Unsaved changes';renderBuilder()};text?.addEventListener('change',()=>apply(text.value));picker?.addEventListener('change',()=>apply(picker.value));card.querySelector('.source-reset')?.addEventListener('click',()=>{const generated=generatedOverrides(token,'#808080',colourAllTokenNames());for(const variable of Object.keys(generated))delete currentFlavour.overrides[variable];delete currentFlavour.overrides[token];semanticState={light:null,dark:null};$('#saveState').textContent='Unsaved changes';renderBuilder()})});root.querySelectorAll('[data-colour-stage]').forEach(button=>button.onclick=()=>setColourStage(button.dataset.colourStage));root.querySelectorAll('[data-colour-ai]').forEach(button=>button.onclick=()=>{const input=$('#aiPrompt');if(!input)return;input.value=button.dataset.colourAi;input.focus();$('#assistant').classList.remove('hidden');$('#openAssistant').classList.add('hidden')});root.querySelectorAll('[data-generate-semantics]').forEach(button=>button.onclick=()=>generateSemanticMode(button.dataset.generateSemantics));root.querySelectorAll('[data-semantic-target]').forEach(select=>select.onchange=()=>saveSemanticManual(currentColourStage===7?'light':'dark',select.dataset.semanticTarget,select.value));$('#refreshColourSemantic')?.addEventListener('click',loadColourSemanticPreview);if(currentColourStage===9&&colourCompletion(currentFlavour?.overrides||{}).complete===colourCompletion(currentFlavour?.overrides||{}).total)queueMicrotask(loadColourSemanticPreview)}
-function renderColourEditor(root){if(currentFlavour.isNew){root.innerHTML+=`<div class="coming"><b>Save Identity first.</b> Colour values are written directly into the canonical Flavour file, so the Flavour needs an id before editing.</div>`;return}const meta=colourStageMeta();const total=colourCompletion(currentFlavour.overrides||{});let stage;if(meta.id<=5)stage=stageCompletion(meta.key);else if(meta.id===6)stage=total;else if(meta.id===7||meta.id===8){const c=semanticMeta(meta.id===7?'light':'dark');stage={complete:c.mapped||0,total:c.mappable||0}}else stage={complete:(semanticMeta('light').complete?1:0)+(semanticMeta('dark').complete?1:0),total:2};const aiPrompts={identity:'Help me choose/refine the three Identity source colours. Judge hierarchy and distinction between the families; preserve good anchors. Any concrete proposals should target source/base Identity primitives only.',ground:'Help me choose the three Ground colours for Canvas Primary, Secondary and Tertiary. Ground is Canvas-only and should not be treated like Surface.',neutral:'Help me choose Neutral 50 so the generated 0–100 scale has the right warm/cool/chromatic character and stays useful for readable UI.',status:'Review Success, Warning, Error and Info source colours as a set. Keep them recognisable, distinct and coherent with the Identity palette.',interaction:'Review link, visited and focus source colours for normal and inverse contexts. Prioritise clarity and accessibility.','primitive-review':'Review this complete Primitive palette as one system before Semantic generation.','semantic-light':'Explain or critique the generated Light Semantic choices. Semantic generation itself uses the dedicated constrained generator.','semantic-dark':'Explain or critique the generated Dark Semantic choices. Semantic generation itself uses the dedicated constrained generator.','final-review':'Review the complete Primitive + Light/Dark Semantic colour system.'};root.innerHTML+=`<div class="colour-guided-shell">${colourMiniNav()}<section class="colour-stage"><header class="colour-stage-head"><div><span class="eyebrow">Colour ${String(meta.id).padStart(2,'0')} / 09</span><h3>${escapeHtml(meta.title)}</h3><p>${escapeHtml(meta.copy)}</p></div><div class="colour-stage-actions"><span class="stage-progress">${stage.complete}/${stage.total}</span><button class="secondary" type="button" data-colour-ai="${escapeHtml(aiPrompts[meta.key])}">Ask AI</button></div></header>${stageBody(meta)}<footer class="colour-stage-nav"><button class="secondary" type="button" data-colour-stage="${Math.max(1,currentColourStage-1)}" ${currentColourStage===1?'disabled':''}>← Previous colour step</button><button class="primary" type="button" data-colour-stage="${Math.min(9,currentColourStage+1)}" ${currentColourStage===9?'disabled':''}>Next colour step →</button></footer></section><div class="colour-footer-actions"><button class="secondary" data-colour-ai="Review my complete Colour system. Focus on the most important design-quality risks.">AI review colour</button><button class="secondary" data-reset-foundation="colour">Reset all Colour overrides</button></div></div>`;wireColourSources(root);root.querySelector('[data-reset-foundation="colour"]')?.addEventListener('click',()=>{if(!confirm('Reset all colour overrides to Core inheritance?'))return;for(const token of tokensForFoundation('colour'))delete currentFlavour.overrides[token.cssVariable];semanticState={light:null,dark:null};$('#saveState').textContent='Unsaved changes';renderBuilder()})}
+async function generateSemanticMode(mode,buildMode='ai'){if(semanticBusy)return;semanticBusy=true;semanticBuildStatus[mode]={state:'building',buildMode,startedAt:Date.now()};renderBuilder();try{if($('#saveState')?.textContent==='Unsaved changes'){await saveCurrent();if($('#saveState')?.textContent!=='Saved')throw new Error('Studio could not save the current Primitive palette before building Semantics.');}const model=$('#aiModel')?.value||aiState.model;const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}/generate`,{method:'POST',body:JSON.stringify({model,buildMode,fresh:true,message:`Generate the ${mode} Semantic colour system for ${currentFlavour.displayName}. This is a fresh rebuild: judge every supplied family batch independently of any previously saved Semantic mapping. Respect all BufferCore hard mappings and legal candidate bands. Choose for hierarchy, readability and coherent family character.`})});currentFlavour={...result.flavour,isNew:false};semanticState[mode]={...result,mappings:result.flavour.semanticMappings?.colour?.[mode]||{}};semanticBuildStatus[mode]={state:'complete',...result.buildProvenance,model:result.model||null,reply:result.reply||'',aiReview:result.aiReview||null};latest=result.status||latest;$('#saveState').textContent='Saved';renderAll(latest);renderBuilder();const p=result.buildProvenance||{};studioToast(buildMode==='ai'?`AI reviewed ${p.aiSelectionCount||0}/${p.batchCount||0} colour families across ${p.aiRequestCount||1} Local AI pass${(p.aiRequestCount||1)===1?'':'es'} in ${((p.elapsedMs||0)/1000).toFixed(1)}s.`:`Deterministic colour build completed in ${((p.elapsedMs||0)/1000).toFixed(1)}s.`,{title:buildMode==='ai'?'AI Semantic build complete':'Deterministic Semantic build complete'});}catch(e){semanticBuildStatus[mode]={state:'error',buildMode,error:e.message};if(buildMode==='ai'){const useFallback=await confirmDialog(e.message,{title:`AI did not build ${titleCase(mode)} Semantics`,detail:'Nothing was saved from this failed AI attempt. You can retry Local AI, or explicitly use BufferCore’s deterministic best-scoring family options instead.',confirmLabel:'Use deterministic build',cancelLabel:'Keep current mappings',tone:'warning'});if(useFallback){semanticBusy=false;renderBuilder();return generateSemanticMode(mode,'deterministic')}}else await errorDialog(e,{title:`Could not build ${mode} Semantics`});}finally{semanticBusy=false;renderBuilder()}}
+async function saveSemanticManual(mode,target,source){const state=semanticState[mode];if(!state)return;const mappings={...(state.mappings||{})};if(source)mappings[target]=source;else delete mappings[target];try{const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`,{method:'PATCH',body:JSON.stringify({mappings})});currentFlavour={...result.flavour,isNew:false};semanticState[mode]={...state,...result,mappings:currentFlavour.semanticMappings?.colour?.[mode]||{},candidateSets:result.candidateSets||state.candidateSets,findings:result.findings||[]};latest=result.status||latest;$('#saveState').textContent='Saved';renderAll(latest);renderBuilder()}catch(e){await errorDialog(e,{title:'Invalid Semantic colour choice',detail:'Studio kept the previous legal mapping. Choose one of the allowed Primitive sources for this role.'});semanticState[mode]=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`);renderBuilder()}}
+
+
+const COLOUR_PALETTE_EXPORT_TYPE='buffercore-colour-source-palette';
+const COLOUR_PALETTE_EXPORT_VERSION=1;
+
+function colourSourceTokens(){
+  return [...SOURCE_GROUPS.identity,...SOURCE_GROUPS.ground,...SOURCE_GROUPS.neutral,...SOURCE_GROUPS.status,...SOURCE_GROUPS.interaction];
+}
+function colourPaletteExportDocument(){
+  const sources={};
+  for(const token of colourSourceTokens()){
+    const value=normalizeHex(currentFlavour?.overrides?.[token]);
+    if(value)sources[token]=value;
+  }
+  return{
+    schemaVersion:COLOUR_PALETTE_EXPORT_VERSION,
+    type:COLOUR_PALETTE_EXPORT_TYPE,
+    flavour:{id:currentFlavour?.id||null,displayName:currentFlavour?.displayName||null},
+    exportedAt:new Date().toISOString(),
+    sources
+  };
+}
+function downloadColourPalette(){
+  const paletteDocument=colourPaletteExportDocument();
+  const missing=colourSourceTokens().filter(token=>!paletteDocument.sources[token]);
+  if(missing.length){
+    return errorDialog(
+      new Error(`The Palette is incomplete. ${missing.length} source colour${missing.length===1?' is':'s are'} still missing.`),
+      {title:'Could not export Palette'}
+    );
+  }
+  const json=JSON.stringify(paletteDocument,null,2)+'\n';
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const link=globalThis.document.createElement('a');
+  const id=(currentFlavour?.id||'buffercore').replace(/[^a-z0-9-]+/gi,'-').toLowerCase();
+  link.href=url;
+  link.download=`${id}-colour-palette.json`;
+  globalThis.document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  studioToast('Exported the 17 Colour source values only.',{title:'Palette exported'});
+}
+function validateColourPaletteImport(value){
+  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('Palette JSON must be an object.');
+  if(value.type!==COLOUR_PALETTE_EXPORT_TYPE)throw new Error(`Expected type "${COLOUR_PALETTE_EXPORT_TYPE}".`);
+  if(Number(value.schemaVersion)!==COLOUR_PALETTE_EXPORT_VERSION)throw new Error(`Unsupported Palette schemaVersion "${value.schemaVersion}".`);
+  if(!value.sources||typeof value.sources!=='object'||Array.isArray(value.sources))throw new Error('Palette JSON is missing its sources object.');
+  const required=colourSourceTokens();
+  const unknown=Object.keys(value.sources).filter(token=>!required.includes(token));
+  if(unknown.length)throw new Error(`Palette contains unknown source token${unknown.length===1?'':'s'}: ${unknown.slice(0,4).join(', ')}${unknown.length>4?` (+${unknown.length-4} more)`:''}.`);
+  const missing=required.filter(token=>!(token in value.sources));
+  if(missing.length)throw new Error(`Palette is incomplete: ${missing.length} required source colour${missing.length===1?' is':'s are'} missing.`);
+  const invalid=required.filter(token=>!normalizeHex(value.sources[token]));
+  if(invalid.length)throw new Error(`Palette contains invalid HEX value${invalid.length===1?'':'s'} for: ${invalid.slice(0,4).join(', ')}${invalid.length>4?` (+${invalid.length-4} more)`:''}.`);
+  return Object.fromEntries(required.map(token=>[token,normalizeHex(value.sources[token])]));
+}
+async function importColourPaletteFile(file){
+  if(!file)return;
+  let parsed;
+  try{
+    parsed=JSON.parse(await file.text());
+    const sources=validateColourPaletteImport(parsed);
+    const all=colourAllTokenNames();
+    for(const [token,value] of Object.entries(sources)){
+      for(const [variable,generated] of Object.entries(generatedOverrides(token,value,all))){
+        currentFlavour.overrides[variable]=generated;
+      }
+    }
+    semanticState={light:null,dark:null};
+    semanticBuildStatus={light:null,dark:null};
+    $('#saveState').textContent='Unsaved changes';
+    renderBuilder();
+    studioToast('Imported 17 source colours and regenerated their derived ramps. Existing Light/Dark mappings were preserved but should be rebuilt against the new Palette.',{title:'Palette imported',tone:'info'});
+  }catch(error){
+    await errorDialog(error,{title:'Could not import Palette'});
+  }
+}
+function openColourPaletteImport(){
+  const input=document.createElement('input');
+  input.type='file';
+  input.accept='application/json,.json';
+  input.hidden=true;
+  input.addEventListener('change',async()=>{const[file]=input.files||[];await importColourPaletteFile(file);input.remove()},{once:true});
+  document.body.appendChild(input);
+  input.click();
+}
+
+
+const COLOUR_REVIEW_EXPORT_TYPE='buffercore-studio-colour-review';
+const COLOUR_REVIEW_EXPORT_VERSION=1;
+
+function colourReviewModeSnapshot(mode){
+  const state=semanticState?.[mode]||{};
+  const mappings={
+    ...(currentFlavour?.semanticMappings?.colour?.[mode]||{}),
+    ...(state.mappings||{})
+  };
+  const resolvedMappings={};
+  for(const [target,source] of Object.entries(mappings)){
+    resolvedMappings[target]={
+      source,
+      value:colourSourceValue(source)||null
+    };
+  }
+  let accessibility={total:0,pass:0,fail:0,pending:0,recommended:0,minimum:0};
+  try{
+    if(state?.candidateSets?.length)accessibility=semanticAccessibilitySummary(mode);
+  }catch{}
+  return{
+    mappings:resolvedMappings,
+    accessibility,
+    findings:Array.isArray(state.findings)?state.findings:[],
+    buildProvenance:state.buildProvenance||semanticBuildStatus?.[mode]||null,
+    aiReview:state.aiReview||semanticBuildStatus?.[mode]?.aiReview||null
+  };
+}
+
+function colourReviewExportDocument(){
+  const palette=colourPaletteExportDocument();
+  return{
+    schemaVersion:COLOUR_REVIEW_EXPORT_VERSION,
+    type:COLOUR_REVIEW_EXPORT_TYPE,
+    studioOnly:true,
+    note:'Studio review snapshot only. Not a BufferCore Core, Flavour, Engine, Figma or Git artifact.',
+    flavour:{
+      id:currentFlavour?.id||null,
+      displayName:currentFlavour?.displayName||null
+    },
+    exportedAt:new Date().toISOString(),
+    palette:{
+      schemaVersion:palette.schemaVersion,
+      type:palette.type,
+      sources:palette.sources
+    },
+    semantics:{
+      light:colourReviewModeSnapshot('light'),
+      dark:colourReviewModeSnapshot('dark')
+    }
+  };
+}
+
+function downloadColourReview(){
+  try{
+    const snapshot=colourReviewExportDocument();
+    const json=JSON.stringify(snapshot,null,2)+'\n';
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const link=globalThis.document.createElement('a');
+    const id=(currentFlavour?.id||'buffercore').replace(/[^a-z0-9-]+/gi,'-').toLowerCase();
+    link.href=url;
+    link.download=`${id}-colour-review.json`;
+    globalThis.document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    studioToast('Downloaded a Studio-only Colour Review snapshot.',{title:'Colour Review exported'});
+  }catch(error){
+    errorDialog(error,{title:'Could not export Colour Review'});
+  }
+}
+
+function colourStageResetLabel(meta){
+  if(meta.id<=5)return`Reset ${meta.title}`;
+  if(meta.id===7||meta.id===8){
+    const mode=meta.id===7?'light':'dark';
+    const group=semanticGroupFocus[mode]||'current group';
+    return`Reset ${titleCase(mode)} ${group.replace('Tones / Design Material','Tones')}`;
+  }
+  return'';
+}
+function primitiveResetTokens(stageKey){
+  const sources=SOURCE_GROUPS[stageKey]||[];
+  const all=colourAllTokenNames();
+  const tokens=new Set();
+  for(const source of sources){
+    tokens.add(source);
+    for(const variable of Object.keys(generatedOverrides(source,'#808080',all)))tokens.add(variable);
+  }
+  return[...tokens];
+}
+async function resetPrimitiveColourStage(stageKey,title){
+  const tokens=primitiveResetTokens(stageKey);
+  const affected=tokens.filter(token=>Object.prototype.hasOwnProperty.call(currentFlavour?.overrides||{},token));
+  const ok=await confirmDialog(`Reset ${title} only?`,{
+    title:`Reset ${title}?`,
+    detail:`This resets only the ${title} Primitive set to Core inheritance. The rest of your palette and your Light/Dark Semantic mappings are kept.`,
+    confirmLabel:`Reset ${title}`,
+    cancelLabel:'Keep changes',
+    tone:'danger'
+  });
+  if(!ok)return;
+  for(const token of tokens)delete currentFlavour.overrides[token];
+  semanticState={light:null,dark:null};
+  $('#saveState').textContent='Unsaved changes';
+  renderBuilder();
+  studioToast(affected.length?`${title} reset to Core inheritance.`:`${title} already inherits Core.`,{tone:'info'});
+}
+async function resetSemanticColourGroup(mode,group){
+  const state=semanticState[mode];
+  if(!state)return;
+  const targetSets=(state.candidateSets||[]).filter(set=>set.group===group);
+  const mappings={...(state.mappings||{})};
+  const targets=new Set(targetSets.map(set=>set.token));
+  const removed=Object.keys(mappings).filter(token=>targets.has(token)).length;
+  const displayGroup=group==='Tones / Design Material'?'Tones':group;
+  const modeTitle=titleCase(mode);
+  const ok=await confirmDialog(`Reset ${modeTitle} ${displayGroup} only?`,{
+    title:`Reset ${modeTitle} ${displayGroup}?`,
+    detail:`This clears only the ${displayGroup} Semantic mappings in ${modeTitle} mode. Your Primitive palette, other ${modeTitle} groups and the entire ${mode==='light'?'Dark':'Light'} mode stay untouched.`,
+    confirmLabel:`Reset ${displayGroup}`,
+    cancelLabel:'Keep mappings',
+    tone:'danger'
+  });
+  if(!ok)return;
+  for(const token of targets)delete mappings[token];
+  try{
+    const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`,{method:'PATCH',body:JSON.stringify({mappings})});
+    currentFlavour={...result.flavour,isNew:false};
+    semanticState[mode]={
+      ...state,
+      ...result,
+      mappings:currentFlavour.semanticMappings?.colour?.[mode]||{},
+      candidateSets:result.candidateSets||state.candidateSets,
+      findings:result.findings||[],
+      buildProvenance:null
+    };
+    semanticBuildStatus[mode]=null;
+    latest=result.status||latest;
+    $('#saveState').textContent='Saved';
+    renderAll(latest);
+    renderBuilder();
+    studioToast(removed?`${modeTitle} ${displayGroup} reset.`:`${modeTitle} ${displayGroup} had no saved mappings.`,{tone:'info'});
+  }catch(e){
+    await errorDialog(e,{title:`Could not reset ${modeTitle} ${displayGroup}`});
+  }
+}
+async function resetSemanticColourMode(mode){
+  const modeTitle=titleCase(mode);
+  const ok=await confirmDialog(`Reset all ${modeTitle} Semantic mappings?`,{
+    title:`Reset ${modeTitle} Semantics?`,
+    detail:`This clears the whole ${modeTitle} Semantic mode only. Your Primitive palette and ${mode==='light'?'Dark':'Light'} Semantic mode remain untouched.`,
+    confirmLabel:`Reset ${modeTitle}`,
+    cancelLabel:'Keep mappings',
+    tone:'danger'
+  });
+  if(!ok)return;
+  try{
+    const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`,{method:'PATCH',body:JSON.stringify({mappings:{}})});
+    currentFlavour={...result.flavour,isNew:false};
+    semanticState[mode]={
+      ...result,
+      mappings:currentFlavour.semanticMappings?.colour?.[mode]||{}
+    };
+    semanticBuildStatus[mode]=null;
+    latest=result.status||latest;
+    $('#saveState').textContent='Saved';
+    renderAll(latest);
+    renderBuilder();
+    studioToast(`${modeTitle} Semantics reset.`,{tone:'info'});
+  }catch(e){
+    await errorDialog(e,{title:`Could not reset ${modeTitle} Semantics`});
+  }
+}
+
+function wireColourSources(root){root.querySelectorAll('[data-source-token]').forEach(card=>{const token=card.dataset.sourceToken;const text=card.querySelector('.source-hex');const picker=card.querySelector('input[type=color]');const apply=value=>{const normal=normalizeHex(value);const all=colourAllTokenNames();if(!normal)return;const generated=generatedOverrides(token,normal,all);for(const [variable,generatedValue] of Object.entries(generated))currentFlavour.overrides[variable]=generatedValue;semanticState={light:null,dark:null};$('#saveState').textContent='Unsaved changes';renderBuilder()};text?.addEventListener('change',()=>apply(text.value));picker?.addEventListener('change',()=>apply(picker.value));card.querySelector('.source-reset')?.addEventListener('click',()=>{const generated=generatedOverrides(token,'#808080',colourAllTokenNames());for(const variable of Object.keys(generated))delete currentFlavour.overrides[variable];delete currentFlavour.overrides[token];semanticState={light:null,dark:null};$('#saveState').textContent='Unsaved changes';renderBuilder()})});root.querySelectorAll('[data-colour-stage]').forEach(button=>button.onclick=()=>setColourStage(button.dataset.colourStage));root.querySelectorAll('[data-colour-ai]').forEach(button=>button.onclick=()=>{const input=$('#aiPrompt');if(!input)return;input.value=button.dataset.colourAi;input.focus();$('#assistant').classList.remove('hidden');$('#openAssistant').classList.add('hidden')});root.querySelectorAll('[data-generate-semantics]').forEach(button=>button.onclick=()=>generateSemanticMode(button.dataset.generateSemantics,'ai'));root.querySelectorAll('[data-build-deterministic]').forEach(button=>button.onclick=()=>generateSemanticMode(button.dataset.buildDeterministic,'deterministic'));root.querySelectorAll('[data-fix-semantic-a11y]').forEach(button=>button.onclick=()=>fixSemanticAccessibility(button.dataset.fixSemanticA11y));root.querySelectorAll('[data-semantic-group]').forEach(button=>button.onclick=()=>{const mode=button.dataset.semanticMode,group=button.dataset.semanticGroup;semanticGroupFocus[mode]=group;localStorage.setItem(`buffercore.studio.semanticGroup.${mode}`,group);renderBuilder()});root.querySelectorAll('[data-semantic-target]').forEach(select=>select.onchange=()=>saveSemanticManual(currentColourStage===7?'light':'dark',select.dataset.semanticTarget,select.value));root.querySelectorAll('[data-import-colour-palette]').forEach(button=>button.onclick=openColourPaletteImport);root.querySelectorAll('[data-export-colour-palette]').forEach(button=>button.onclick=downloadColourPalette);root.querySelectorAll('[data-export-colour-review]').forEach(button=>button.onclick=downloadColourReview);root.querySelectorAll('[data-reset-colour-set]').forEach(button=>button.onclick=()=>{const scope=button.dataset.resetColourSet;if(scope==='primitive')return resetPrimitiveColourStage(button.dataset.stageKey,button.dataset.stageTitle);if(scope==='semantic-group')return resetSemanticColourGroup(button.dataset.semanticMode,button.dataset.semanticGroup);if(scope==='semantic-mode')return resetSemanticColourMode(button.dataset.semanticMode)});$('#refreshColourSemantic')?.addEventListener('click',loadColourSemanticPreview);if(currentColourStage===9&&colourCompletion(currentFlavour?.overrides||{}).complete===colourCompletion(currentFlavour?.overrides||{}).total)queueMicrotask(loadColourSemanticPreview)}
+function renderColourEditor(root){if(currentFlavour.isNew){root.innerHTML+=`<div class="coming"><b>Save Identity first.</b> Colour values are written directly into the canonical Flavour file, so the Flavour needs an id before editing.</div>`;return}const meta=colourStageMeta();const total=colourCompletion(currentFlavour.overrides||{});let stage;if(meta.id<=5)stage=stageCompletion(meta.key);else if(meta.id===6)stage=total;else if(meta.id===7||meta.id===8){const c=semanticMeta(meta.id===7?'light':'dark');stage={complete:c.mapped||0,total:c.mappable||0}}else stage={complete:(semanticMeta('light').complete?1:0)+(semanticMeta('dark').complete?1:0),total:2};const phase=meta.id<=5?{name:'Palette',step:meta.id,total:5}:meta.id===6?{name:'Meaning',step:1,total:1}:meta.id===7?{name:'Light',step:1,total:1}:meta.id===8?{name:'Dark',step:1,total:1}:{name:'Review',step:1,total:1};const sourceValues=[...SOURCE_GROUPS.identity,...SOURCE_GROUPS.ground,...SOURCE_GROUPS.status,...SOURCE_GROUPS.interaction,'--bc-color-neutral-50'].map(colourSourceValue).filter(Boolean);const paletteContext=sourceValues.length?`<div class="colour-palette-context"><span>Palette so far</span><div>${sourceValues.map(value=>`<i style="background:${escapeHtml(value)}" title="${escapeHtml(value)}"></i>`).join('')}</div><small>${total.complete}/${total.total} source colours set</small></div>`:'';const aiPrompts={identity:'Help me choose/refine the three Identity source colours. Judge hierarchy and distinction between the families; preserve good anchors. Any concrete proposals should target source/base Identity primitives only.',ground:'Help me choose the three Ground colours for Canvas Primary, Secondary and Tertiary. Ground is Canvas-only and should not be treated like Surface.',neutral:'Help me choose Neutral 50 so the generated 0–100 scale has the right warm/cool/chromatic character and stays useful for readable UI.',status:'Review Success, Warning, Error and Info source colours as a set. Keep them recognisable, distinct and coherent with the Identity palette.',interaction:'Review link, visited and focus source colours for normal and inverse contexts. Prioritise clarity and accessibility.','primitive-review':'Review this complete Primitive palette as one system before Semantic generation.','semantic-light':'Explain or critique the generated Light Semantic choices. Semantic generation itself uses the dedicated constrained generator.','semantic-dark':'Explain or critique the generated Dark Semantic choices. Semantic generation itself uses the dedicated constrained generator.','final-review':'Review the complete Primitive + Light/Dark Semantic colour system.'};root.innerHTML+=`<div class="colour-guided-shell">${colourMiniNav()}${meta.id<=6?paletteContext:''}<section class="colour-stage"><header class="colour-stage-head"><div class="colour-stage-heading"><span class="eyebrow">${escapeHtml(phase.name)} · ${String(phase.step).padStart(2,'0')} / ${String(phase.total).padStart(2,'0')}</span><h3>${escapeHtml(meta.title)}</h3><p>${escapeHtml(meta.copy)}</p></div><div class="colour-stage-actions"><span class="stage-progress"><b>${stage.complete}</b><span>/ ${stage.total}</span></span>${meta.id<=5?`<div class="palette-io-actions"><button class="ghost" type="button" data-import-colour-palette>Import Palette</button><button class="ghost" type="button" data-export-colour-palette>Export Palette</button></div><button class="ghost colour-set-reset" type="button" data-reset-colour-set="primitive" data-stage-key="${escapeHtml(meta.key)}" data-stage-title="${escapeHtml(meta.title)}">Reset ${escapeHtml(meta.title)}</button>`:''}<button class="secondary colour-ai-button" type="button" data-colour-ai="${escapeHtml(aiPrompts[meta.key])}">Ask AI about this step</button></div></header><div class="colour-stage-body">${stageBody(meta)}</div><footer class="colour-stage-nav"><button class="secondary" type="button" data-colour-stage="${Math.max(1,currentColourStage-1)}" ${currentColourStage===1?'disabled':''}>← Previous</button><div><span>${escapeHtml(meta.title)}</span><small>${meta.id<=5?`Palette ${meta.id}/5`:meta.id===6?'Meaning':meta.id===7?'Light':meta.id===8?'Dark':'Review'}</small></div><button class="primary" type="button" data-colour-stage="${Math.min(9,currentColourStage+1)}" ${currentColourStage===9?'disabled':''}>${currentColourStage===9?'Colour complete':'Continue →'}</button></footer></section><div class="colour-footer-actions"><button class="secondary" data-colour-ai="Review my complete Colour system. Focus on the most important design-quality risks.">AI review colour</button><button class="danger-subtle" data-reset-foundation="colour">Reset entire Colour Foundation</button></div></div>`;wireColourSources(root);root.querySelector('[data-reset-foundation="colour"]')?.addEventListener('click',async()=>{const ok=await confirmDialog('Reset the entire Colour Foundation?',{title:'Reset entire Colour Foundation?',detail:'This is the full reset: every Colour Primitive override and all Light/Dark Semantic mappings will be cleared. Use the scoped Reset controls inside each Palette or Semantic set when you only want to reset one area.',confirmLabel:'Reset entire Colour Foundation',cancelLabel:'Keep Colour system',tone:'danger'});if(!ok)return;for(const token of tokensForFoundation('colour'))delete currentFlavour.overrides[token.cssVariable];try{for(const mode of ['light','dark'])await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/colour-semantics/${mode}`,{method:'PATCH',body:JSON.stringify({mappings:{}})})}catch(e){await errorDialog(e,{title:'Colour reset was only partially completed'});return}currentFlavour.semanticMappings={...(currentFlavour.semanticMappings||{}),colour:{light:{},dark:{}}};semanticState={light:null,dark:null};$('#saveState').textContent='Unsaved changes';renderBuilder()})}
 function renderSemanticPreview(data){const root=$('#semanticPreviewBody');if(!root)return;if(!data?.modes){root.innerHTML='<div class="source-empty">No resolved semantic preview available.</div>';return}const order=['Fill','Text','Border','Surface','Canvas','Interaction','Tones','Overlay','Shadow'];const renderMode=(mode,items)=>{const groups=new Map();for(const item of items){const g=item.group||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(item)}const keys=[...groups.keys()].sort((a,b)=>{const ai=order.indexOf(a),bi=order.indexOf(b);return(ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b)});return`<section class="semantic-mode"><header><strong>${mode}</strong><span>${items.length} semantic values</span></header>${keys.map(g=>`<details ${['Fill','Text','Surface'].includes(g)?'open':''}><summary>${escapeHtml(g)} <small>${groups.get(g).length}</small></summary><div class="semantic-swatches">${groups.get(g).slice(0,80).map(item=>`<div title="${escapeHtml(item.cssVariable)} · ${escapeHtml(item.value)}"><i style="background:${escapeHtml(item.value)}"></i><span>${escapeHtml(item.label)}</span></div>`).join('')}</div></details>`).join('')}</section>`};root.innerHTML=`<div class="semantic-mode-grid">${renderMode('Light',data.modes.light||[])}${renderMode('Dark',data.modes.dark||[])}</div>`}
 async function loadColourSemanticPreview(){const c=colourCompletion(currentFlavour?.overrides||{});if(c.complete!==c.total)return;const root=$('#semanticPreviewBody');if(root)root.innerHTML='<div class="source-empty">Resolving Core + current Flavour…</div>';try{colourSemanticPreview=await api('/api/colour-preview',{method:'POST',body:JSON.stringify({flavour:currentFlavour})});renderSemanticPreview(colourSemanticPreview)}catch(e){if(root)root.innerHTML=`<div class="source-empty">${escapeHtml(e.message)}</div>`}}
 function typographyStageMeta(){return[
@@ -130,10 +592,10 @@ function renderTypographyStage(meta){if(meta.key==='roles'){const comp=typograph
  const tokens=typographyStageTokens(meta.key);return`${typePreview()}<section class="type-guided-section"><header><div><span class="eyebrow">Primitive material</span><h3>${meta.title}</h3><p>${meta.copy}</p></div><button class="secondary" data-type-ai="Help me refine ${meta.title.toLowerCase()} for ${escapeHtml(currentFlavour.displayName)}">Ask AI</button></header>${renderTypographyTokenRows(tokens)}</section>`}
 function renderTypographyEditor(root){if(currentFlavour.isNew){root.innerHTML+=`<div class="coming"><b>Save Identity first.</b> Typography overrides need a canonical Flavour id before they can be written.</div>`;return}const meta=typographyStageMeta();root.innerHTML+=`<div class="type-guided-shell">${typographyMiniNav()}<section class="type-stage"><header class="type-stage-head"><div><div class="eyebrow">Typography · ${String(meta.id).padStart(2,'0')} of 07</div><h3>${meta.title}</h3><p>${meta.copy}</p></div><button class="secondary" data-reset-foundation="typography">Reset Typography overrides</button></header><div class="type-stage-body">${renderTypographyStage(meta)}</div><footer class="type-stage-nav"><button class="secondary" data-type-prev ${meta.id===1?'disabled':''}>← Previous</button><button class="primary" data-type-next ${meta.id===7?'disabled':''}>${meta.id===6?'Review hierarchy':'Continue'} →</button></footer></section></div>`;wireTokenEditors(root);updateTypeSpecimen();root.querySelectorAll('[data-type-stage]').forEach(b=>b.onclick=()=>setTypographyStage(b.dataset.typeStage));root.querySelector('[data-type-prev]')?.addEventListener('click',()=>setTypographyStage(currentTypographyStage-1));root.querySelector('[data-type-next]')?.addEventListener('click',()=>setTypographyStage(currentTypographyStage+1));root.querySelectorAll('[data-type-ai]').forEach(button=>button.onclick=()=>{const input=$('#aiPrompt');if(input){input.value=button.dataset.typeAi;input.focus();$('#assistant').classList.remove('hidden');$('#openAssistant').classList.add('hidden')}});root.querySelector('#generateTypographyAI')?.addEventListener('click',generateTypographySemantics);root.querySelectorAll('[data-type-semantic-target]').forEach(select=>select.onchange=()=>saveTypographySemantic(select.dataset.typeSemanticTarget,select.value));root.querySelectorAll('[data-type-property-reset]').forEach(button=>button.onclick=()=>saveTypographySemantic(button.dataset.typePropertyReset,''));root.querySelectorAll('[data-type-role-reset]').forEach(button=>button.onclick=()=>resetTypographyRole(button.dataset.typeRoleReset))}
 async function loadTypographySemantics(){if(currentFlavour?.isNew)return;try{typographyState=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics`);if(currentStep===3)renderBuilder()}catch(e){typographyState={error:e.message,candidateSets:[],mappings:{},completion:{}};if(currentStep===3)renderBuilder()}}
-async function generateTypographySemantics(){if(typographyBusy)return;const direction=prompt('What should AI change about the inherited typography?', 'Refine the hierarchy only where needed. Keep Paragraph 2 as the body baseline and preserve clear role distinction.');if(direction===null)return;typographyBusy=true;renderBuilder();try{await saveCurrent();const model=$('#aiModel')?.value||aiState.model;const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics/generate`,{method:'POST',body:JSON.stringify({model,message:direction})});currentFlavour={...result.flavour,isNew:false};typographyState={...result,mappings:result.mappings||result.flavour.semanticMappings?.typography||{}};latest=result.status||latest;renderAll(latest);renderBuilder();$('#saveState').textContent='Saved'}catch(e){alert(e.message)}finally{typographyBusy=false;renderBuilder()}}
-async function saveTypographySemantic(target,source){if(!typographyState)return;const mappings={...(typographyState.mappings||{})};if(source)mappings[target]=source;else delete mappings[target];try{const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics`,{method:'PATCH',body:JSON.stringify({mappings})});currentFlavour={...result.flavour,isNew:false};typographyState={...typographyState,...result,mappings:result.mappings||currentFlavour.semanticMappings?.typography||{},completion:result.completion};latest=result.status||latest;renderAll(latest);renderBuilder()}catch(e){alert(e.message)}}
+async function generateTypographySemantics(){if(typographyBusy)return;const direction=await promptDialog('What should AI change about the inherited typography?',{title:'Refine Typography with AI',label:'Direction',value:'Refine the hierarchy only where needed. Keep Paragraph 2 as the body baseline and preserve clear role distinction.',confirmLabel:'Review Typography',cancelLabel:'Cancel'});if(direction===null)return;typographyBusy=true;renderBuilder();try{await saveCurrent();const model=$('#aiModel')?.value||aiState.model;const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics/generate`,{method:'POST',body:JSON.stringify({model,message:direction})});currentFlavour={...result.flavour,isNew:false};typographyState={...result,mappings:result.mappings||result.flavour.semanticMappings?.typography||{}};latest=result.status||latest;renderAll(latest);renderBuilder();$('#saveState').textContent='Saved'}catch(e){await errorDialog(e,{title:'Could not refine Typography'});}finally{typographyBusy=false;renderBuilder()}}
+async function saveTypographySemantic(target,source){if(!typographyState)return;const mappings={...(typographyState.mappings||{})};if(source)mappings[target]=source;else delete mappings[target];try{const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics`,{method:'PATCH',body:JSON.stringify({mappings})});currentFlavour={...result.flavour,isNew:false};typographyState={...typographyState,...result,mappings:result.mappings||currentFlavour.semanticMappings?.typography||{},completion:result.completion};latest=result.status||latest;renderAll(latest);renderBuilder()}catch(e){await errorDialog(e,'Typography mapping rejected')}}
 
-async function resetTypographyRole(key){if(!typographyState)return;const [role,level]=String(key||'').split(':');const mappings={...(typographyState.mappings||{})};for(const set of typographyState.candidateSets||[])if(set.role===role&&String(set.level)===String(level))delete mappings[set.token];try{const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics`,{method:'PATCH',body:JSON.stringify({mappings})});currentFlavour={...result.flavour,isNew:false};typographyState={...typographyState,...result,mappings:result.mappings||{}};latest=result.status||latest;renderAll(latest);renderBuilder()}catch(e){alert(e.message)}}
+async function resetTypographyRole(key){if(!typographyState)return;const [role,level]=String(key||'').split(':');const mappings={...(typographyState.mappings||{})};for(const set of typographyState.candidateSets||[])if(set.role===role&&String(set.level)===String(level))delete mappings[set.token];try{const result=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/typography-semantics`,{method:'PATCH',body:JSON.stringify({mappings})});currentFlavour={...result.flavour,isNew:false};typographyState={...typographyState,...result,mappings:result.mappings||{}};latest=result.status||latest;renderAll(latest);renderBuilder()}catch(e){await errorDialog(e,'Typography reset failed')}}
 
 
 function guidedFoundationSection(foundations, titles, copy){
@@ -152,7 +614,7 @@ function motionPreview(){return`<div class="design-preview motion-preview"><div 
 function wireMotionPreview(){const button=$('#motionDemo');if(!button)return;button.onclick=()=>{button.classList.remove('playing');void button.offsetWidth;button.classList.add('playing')}}
 
 function setLocalOverride(cssVariable,value){const trimmed=String(value??'').trim();if(!trimmed||trimmed==='initial')delete currentFlavour.overrides[cssVariable];else currentFlavour.overrides[cssVariable]=trimmed;$('#saveState').textContent='Unsaved changes'}
-function wireTokenEditors(root){root.querySelectorAll('[data-token]').forEach(row=>{const variable=row.dataset.token;const token=tokenByVariable(variable);const text=row.querySelector('.token-value');const picker=row.querySelector('.colour-picker');const mode=row.querySelector('.token-mode');const reset=row.querySelector('.token-reset');const syncState=()=>{const overridden=Object.prototype.hasOwnProperty.call(currentFlavour?.overrides||{},variable);row.classList.toggle('custom',overridden);if(mode){mode.textContent=overridden?'Override':'Initial';mode.classList.toggle('override',overridden);mode.classList.toggle('initial',!overridden)}if(reset)reset.classList.toggle('is-hidden',!overridden)};text.oninput=()=>{setLocalOverride(variable,text.value);syncState();if(picker&&validHex(text.value)){picker.value=text.value;row.querySelector('.swatch').style.background=text.value}if(currentStep===3)updateTypeSpecimen()};if(picker)picker.oninput=()=>{text.value=picker.value;row.querySelector('.swatch').style.background=picker.value;text.dispatchEvent(new Event('input'))};if(reset)reset.onclick=()=>{delete currentFlavour.overrides[variable];text.value=String(initialValue(token));$('#saveState').textContent='Unsaved changes';syncState();if(picker)row.querySelector('.swatch').style.background='';if(currentStep===3)updateTypeSpecimen()};syncState()});root.querySelectorAll('[data-reset-foundation]').forEach(button=>button.onclick=()=>{if(!confirm(`Reset all ${button.dataset.resetFoundation} overrides to Initial?`))return;for(const token of tokensForFoundation(button.dataset.resetFoundation))delete currentFlavour.overrides[token.cssVariable];$('#saveState').textContent='Unsaved changes';renderBuilder()})}
+function wireTokenEditors(root){root.querySelectorAll('[data-token]').forEach(row=>{const variable=row.dataset.token;const token=tokenByVariable(variable);const text=row.querySelector('.token-value');const picker=row.querySelector('.colour-picker');const mode=row.querySelector('.token-mode');const reset=row.querySelector('.token-reset');const syncState=()=>{const overridden=Object.prototype.hasOwnProperty.call(currentFlavour?.overrides||{},variable);row.classList.toggle('custom',overridden);if(mode){mode.textContent=overridden?'Override':'Initial';mode.classList.toggle('override',overridden);mode.classList.toggle('initial',!overridden)}if(reset)reset.classList.toggle('is-hidden',!overridden)};text.oninput=()=>{setLocalOverride(variable,text.value);syncState();if(picker&&validHex(text.value)){picker.value=text.value;row.querySelector('.swatch').style.background=text.value}if(currentStep===3)updateTypeSpecimen()};if(picker)picker.oninput=()=>{text.value=picker.value;row.querySelector('.swatch').style.background=picker.value;text.dispatchEvent(new Event('input'))};if(reset)reset.onclick=()=>{delete currentFlavour.overrides[variable];text.value=String(initialValue(token));$('#saveState').textContent='Unsaved changes';syncState();if(picker)row.querySelector('.swatch').style.background='';if(currentStep===3)updateTypeSpecimen()};syncState()});root.querySelectorAll('[data-reset-foundation]').forEach(button=>button.onclick=async()=>{const name=button.dataset.resetFoundation;const ok=await confirmDialog(`Reset all ${name} overrides to Initial?`,{title:`Reset ${titleCase(name)}?`,detail:'The Flavour will inherit these values from Core again.',confirmLabel:'Reset overrides',cancelLabel:'Keep changes',tone:'danger'});if(!ok)return;for(const token of tokensForFoundation(name))delete currentFlavour.overrides[token.cssVariable];$('#saveState').textContent='Unsaved changes';renderBuilder()})}
 
 function updateTypeSpecimen(){const specimen=$('#typeSpecimen');if(!specimen)return;const tokens=tokensForFoundation('typography');const family=tokens.find(t=>t.cssVariable.includes('font-family-primary'));const secondary=tokens.find(t=>t.cssVariable.includes('font-family-secondary'));const weight=tokens.find(t=>t.cssVariable.includes('weight-')&&String(currentValue(t)).match(/^[5-9]00$/));const fam=family?currentValue(family):'inherit';const sec=secondary?currentValue(secondary):fam;specimen.style.setProperty('--specimen-family',fam);specimen.style.setProperty('--specimen-secondary',sec);if(weight)specimen.style.setProperty('--specimen-weight',currentValue(weight))}
 
@@ -184,7 +646,7 @@ function wireReviewActions(){
  });
  $('#reviewCommit')?.addEventListener('click',async()=>{
    const out=$('#reviewOutput');
-   try{await saveCurrent();const d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/review`);if(!d.review.ok){out.textContent=formatReview(d.review);return}const message=prompt('Commit message:',`Add ${currentFlavour.displayName} Flavour`);if(!message)return;out.textContent='Committing and pushing BufferCore-Flavours…';const pushed=await api('/api/commit-push',{method:'POST',body:JSON.stringify({repository:'flavours',message})});latest=pushed.status;renderAll(latest);out.textContent='Committed and pushed.\nNow open the Figma plugin, choose this Flavour, then Pull + build → Inspect → Apply.'}catch(e){out.textContent=e.message}
+   try{await saveCurrent();const d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/review`);if(!d.review.ok){out.textContent=formatReview(d.review);return}const message=await promptDialog('Enter the Git commit message for this Flavour.',{title:'Commit and push Flavour',label:'Commit message',value:`Add ${currentFlavour.displayName} Flavour`,confirmLabel:'Commit & push',cancelLabel:'Cancel'});if(!message)return;out.textContent='Committing and pushing BufferCore-Flavours…';const pushed=await api('/api/commit-push',{method:'POST',body:JSON.stringify({repository:'flavours',message})});latest=pushed.status;renderAll(latest);out.textContent='Committed and pushed.\nNow open the Figma plugin, choose this Flavour, then Pull + build → Inspect → Apply.'}catch(e){out.textContent=e.message}
  });
 }
 
@@ -199,7 +661,7 @@ function renderBuilder(){if(!currentFlavour)return;$('#builderEyebrow').textCont
 
 async function saveCurrent(){if(!currentFlavour)return;try{$('#saveState').textContent='Saving…';let d;if(currentFlavour.isNew){const name=$('#flavourName')?.value??currentFlavour.displayName;const payload={displayName:name,id:slug(name),description:$('#flavourDescription')?.value??currentFlavour.description,notes:$('#flavourNotes')?.value??currentFlavour.notes};d=await api('/api/flavours',{method:'POST',body:JSON.stringify(payload)})}else if(currentStep===1){const payload={displayName:$('#flavourName')?.value??currentFlavour.displayName,description:$('#flavourDescription')?.value??currentFlavour.description,notes:$('#flavourNotes')?.value??currentFlavour.notes};d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}`,{method:'PATCH',body:JSON.stringify(payload)})}else{d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/overrides`,{method:'PATCH',body:JSON.stringify({overrides:currentFlavour.overrides||{}})})}currentFlavour={...d.flavour,isNew:false};latest=d.status;localStorage.setItem('buffercore.studio.flavourId',currentFlavour.id);renderAll(latest);renderBuilder();$('#saveState').textContent='Saved'}catch(e){$('#saveState').textContent=e.message}}
 
-$('#newFlavour').onclick=startNew;$('#backToFlavours').onclick=()=>{setView('flavours');currentFlavour=null};$('#saveFlavour').onclick=saveCurrent;$('#duplicateFlavour').onclick=async()=>{const name=prompt('Name for the duplicated Flavour:',`${currentFlavour.displayName} Copy`);if(!name)return;try{const d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/duplicate`,{method:'POST',body:JSON.stringify({displayName:name})});latest=d.status;renderAll(latest);await openFlavour(d.flavour.id)}catch(e){alert(e.message)}};$('#deleteFlavour').onclick=async()=>{if(!confirm(`Delete ${currentFlavour.displayName}? This removes its Flavour folder.`))return;try{const d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}`,{method:'DELETE'});latest=d.status;renderAll(latest);currentFlavour=null;setView('flavours')}catch(e){alert(e.message)}};
+$('#newFlavour').onclick=startNew;$('#backToFlavours').onclick=()=>{setView('flavours');currentFlavour=null};$('#saveFlavour').onclick=saveCurrent;$('#duplicateFlavour').onclick=async()=>{const name=await promptDialog('Choose a name for the duplicated Flavour.',{title:'Duplicate Flavour',label:'Flavour name',value:`${currentFlavour.displayName} Copy`,confirmLabel:'Duplicate',cancelLabel:'Cancel'});if(!name)return;try{const d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}/duplicate`,{method:'POST',body:JSON.stringify({displayName:name})});latest=d.status;renderAll(latest);studioToast('Flavour duplicated.',{title:name});await openFlavour(d.flavour.id)}catch(e){await errorDialog(e,{title:'Could not duplicate Flavour'})}};$('#deleteFlavour').onclick=async()=>{const ok=await confirmDialog(`Delete ${currentFlavour.displayName}?`,{title:'Delete Flavour?',detail:'This permanently removes its Flavour folder. This action cannot be undone from Studio.',confirmLabel:'Delete Flavour',cancelLabel:'Keep Flavour',tone:'danger'});if(!ok)return;try{const d=await api(`/api/flavours/${encodeURIComponent(currentFlavour.id)}`,{method:'DELETE'});latest=d.status;renderAll(latest);currentFlavour=null;setView('flavours');studioToast('Flavour deleted.',{tone:'info'})}catch(e){await errorDialog(e,{title:'Could not delete Flavour'})}};
 
 $('#closeAssistant').onclick=()=>{$('#assistant').classList.add('hidden');$('#openAssistant').classList.remove('hidden')};$('#openAssistant').onclick=()=>{$('#assistant').classList.remove('hidden');$('#openAssistant').classList.add('hidden')};
 

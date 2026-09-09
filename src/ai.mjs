@@ -96,10 +96,17 @@ export function buildSemanticColourPrompt({ mode, candidateSets, existing = {}, 
     group: set.group,
     name: set.name,
     purpose: set.purpose,
+    context: set.context,
+    sourceRule: set.sourceRule,
+    appearanceRule: set.appearanceRule,
+    relationshipRule: set.relationshipRule,
     notes: set.notes,
+    rules: set.rules,
+    accessibilityMinimum: set.accessibilityMinimum || null,
+    accessibilityRecommended: set.accessibilityRecommended || null,
     candidates: set.candidates
   }));
-  return `You are BufferCore Studio's Semantic Colour selector. BufferCore owns the Semantic token architecture. The Flavour owns only which LEGAL Primitive token each existing Semantic role maps to. Never invent colours, token names, Semantic roles or Primitive sources. Never output raw colour values. Choose exactly one candidate token from the supplied candidate list for each target.\n\nMode: ${mode}.\nExisting accepted mappings: ${JSON.stringify(existing)}\nTargets requiring design judgement: ${JSON.stringify(ambiguous)}\nDesigner instruction: ${message || 'Choose the most coherent mapping for each role while preserving hierarchy, family character and practical UI readability.'}\n\nReturn JSON only: {"reply":"short review","mappings":[{"semanticToken":"--bc-color-...","primitiveToken":"--bc-color-...","reason":"short reason"}]}. Every primitiveToken must be one of that target's candidates.`;
+  return `You are BufferCore Studio's Semantic Colour selector. BufferCore owns the Semantic token architecture. The Flavour owns only which LEGAL Primitive token each existing Semantic role maps to. Never invent colours, token names, Semantic roles or Primitive sources. Never output raw colour values. Choose exactly one candidate token from the supplied candidate list for each target. For roles with an accessibilityMinimum, every supplied candidate already clears that hard minimum against BufferCore's representative normal/inverse Surface. Treat accessibilityRecommended as a preferred target, not a hard requirement. Follow purpose, context, sourceRule, appearanceRule, relationshipRule, notes and the supplied global/group rules for every target. Prefer the weakest/closest viable candidate that satisfies the role. Preserve Muted/Subtle/Default and Subtle/Soft/Base/Strong/Bold hierarchy, keep adjacent roles perceptually distinct, preserve family character, and avoid unnecessary drift towards pure white/black or the most extreme ramp tone merely to maximise contrast.\n\nMode: ${mode}.\nExisting accepted mappings: ${JSON.stringify(existing)}\nTargets requiring design judgement: ${JSON.stringify(ambiguous)}\nDesigner instruction: ${message || 'Choose the most coherent mapping for each role while preserving hierarchy, family character and practical UI readability.'}\n\nReturn JSON only: {"reply":"short review","mappings":[{"semanticToken":"--bc-color-...","primitiveToken":"--bc-color-...","reason":"short reason"}]}. Every primitiveToken must be one of that target's candidates.`;
 }
 
 export function parseSemanticColourResponse(text, candidateSets = []) {
@@ -177,4 +184,149 @@ export async function runSemanticTypographyAssistant({ candidateSets, existing =
   if (!response.ok) throw new Error(`Local AI request failed (${response.status}).`);
   const data = await response.json();
   return { model: chosen, ...parseSemanticTypographyResponse(data.response, candidateSets) };
+}
+
+export function buildSemanticColourPlanPrompt({ mode, batches = [], existing = {}, message = '' }) {
+  const compact = batches.map(batch => ({
+    id: batch.id,
+    group: batch.group,
+    label: batch.label,
+    roles: batch.items.map(set => ({ token:set.token, name:set.name, purpose:set.purpose, minimum:set.accessibilityMinimum||null, recommended:set.accessibilityRecommended||null })),
+    options: batch.options.slice(0,3).map(option => ({
+      id: option.id,
+      score: option.score,
+      allMinimumsMet: option.allMinimumsMet,
+      quality: option.visualQuality,
+      mappings: option.choices.map(choice => ({
+        token: choice.token,
+        source: choice.source,
+        value: choice.value,
+        contrast: choice.contrast == null ? null : Number(choice.contrast.toFixed(2)),
+        recommended: choice.meetsRecommended,
+        chromaRetention: choice.perceptual ? Number(choice.perceptual.chromaRetention.toFixed(2)) : null,
+        hueDrift: choice.perceptual ? Number((choice.perceptual.hueDrift || 0).toFixed(1)) : null,
+        baseDistance: choice.perceptual ? Number((choice.perceptual.baseDistance || 0).toFixed(1)) : null
+      }))
+    }))
+  }));
+  return `You are BufferCore Studio's Semantic Colour family judge. BufferCore already enforced the canonical architecture, allowed Primitive families, hard accessibility minimums and generated the top coherent options for each design family. Do NOT construct mappings token-by-token. Choose one supplied optionId for each batch.
+
+Judge whole families: semantic hierarchy, meaningful sibling separation, preserved family character, recommended contrast when it fits naturally, and avoidance of unnecessary black/white endpoint collapse. For chromatic Text Strong / Strong Inverse, use this strict priority: (1) hard accessibility minimum is non-negotiable, (2) preserve recognisable family identity/chroma and avoid cross-family convergence, (3) maintain Base-to-Strong separation of at least ΔE 5, preferably 7+, then (4) prefer the recommended 7:1 target only when it does not materially damage family character. A 4.5–6.99:1 candidate is a valid PASS and SHOULD beat a 7:1+ candidate when the latter becomes muddy, generic, endpoint-heavy, or materially less recognisable as the source family. BufferCore supplies a quality frontier of viable Strong options: some stay closer to Base, while others deliberately buy more semantic strength or recommended contrast without materially damaging family identity. Do not automatically prefer the closest tone, the darkest tone, or the later O-number. Choose the best trade-off for a genuinely Strong, recognisable family role. Minimum contrast is a hard floor where defined. Recommended contrast is guidance, never a reason to sacrifice personality. Prefer lower deterministic score unless the visual evidence gives a clear reason to choose another supplied option.
+
+Mode: ${mode}
+Designer instruction: ${message || 'Choose the most coherent production-ready option for each family.'}
+Existing mappings are already considered by BufferCore and need not be repeated.
+Batches: ${JSON.stringify(compact)}
+
+Return JSON only: {"reply":"short review","batchSelections":[{"batchId":"B1","optionId":"O1","reason":"short reason"}]}. You MUST return exactly one explicit selection for EVERY supplied batch, including O1 when the deterministic O1 default is your preferred choice. Never omit a batch, never invent colours, tokens, batches or option IDs.`;
+}
+
+export function parseSemanticColourPlanResponse(text, batches = []) {
+  const source = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  let parsed;
+  try { parsed = JSON.parse(source); } catch { throw new Error('Local AI returned invalid Semantic Colour plan JSON.'); }
+  const legal = new Map((batches || []).map(batch => [batch.id, new Set((batch.options || []).map(option => option.id))]));
+  const batchSelections = [];
+  for (const item of Array.isArray(parsed.batchSelections) ? parsed.batchSelections : []) {
+    if (!legal.get(item?.batchId)?.has(item?.optionId)) continue;
+    batchSelections.push({ batchId: item.batchId, optionId: item.optionId, reason: String(item.reason || '').trim() });
+  }
+  return { reply: String(parsed.reply || '').trim(), batchSelections };
+}
+
+export async function runSemanticColourPlanAssistant({ mode, batches, existing = {}, message = '', model, fetchImpl = fetch, config = aiConfig() }) {
+  const discovered = await discoverAiModels({ fetchImpl, config });
+  const chosen = String(model || config.model || discovered.models[0] || '').trim();
+  if (!discovered.available) throw new Error(`Local AI is not reachable at ${config.url}.`);
+  if (!chosen) throw new Error('No local AI model is installed or selected.');
+  if (config.registryAvailable) registerLocalAiApp({ registryPath: config.registryPath, model: chosen });
+
+  const chunkSize = 8;
+  const chunks = [];
+  for (let i = 0; i < batches.length; i += chunkSize) chunks.push(batches.slice(i, i + chunkSize));
+
+  const batchSelections = [];
+  const replies = [];
+  const passes = [];
+  let requestCount = 0;
+
+  for (let index = 0; index < chunks.length; index += 1) {
+    const chunk = chunks[index];
+    const passMessage = `${message || 'Choose the most coherent production-ready option for each family.'}
+This is Local AI review pass ${index + 1}/${chunks.length}. You must explicitly decide every family supplied in this pass.`;
+
+    const prompt = buildSemanticColourPlanPrompt({ mode, batches: chunk, existing, message: passMessage });
+    const passStartedAt = Date.now();
+    const response = await fetchImpl(`${config.url}/api/generate`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: chosen,
+        prompt,
+        stream: false,
+        format: 'json',
+        options: { temperature: 0.2 }
+      }),
+      signal: AbortSignal.timeout(180000)
+    });
+    requestCount += 1;
+    if (!response.ok) throw new Error(`Local AI request failed (${response.status}) during family review pass ${index + 1}/${chunks.length}.`);
+
+    const data = await response.json();
+    const wallMs = Date.now() - passStartedAt;
+    passes.push({
+      pass: index + 1,
+      batchCount: chunk.length,
+      batchIds: chunk.map(batch => batch.id),
+      wallMs,
+      promptChars: prompt.length,
+      prompt_eval_count: Number(data.prompt_eval_count || 0),
+      eval_count: Number(data.eval_count || 0),
+      prompt_eval_duration: Number(data.prompt_eval_duration || 0),
+      eval_duration: Number(data.eval_duration || 0),
+      total_duration: Number(data.total_duration || 0)
+    });
+    const parsed = parseSemanticColourPlanResponse(data.response, chunk);
+    const required = new Set(chunk.map(batch => batch.id));
+    const returned = new Set(parsed.batchSelections.map(item => item.batchId));
+
+    if (returned.size !== required.size || [...required].some(id => !returned.has(id))) {
+      const missing = chunk.filter(batch => !returned.has(batch.id)).map(batch => batch.label || batch.id);
+      throw new Error(
+        `Local AI returned ${returned.size}/${required.size} explicit family decisions during pass ${index + 1}/${chunks.length}. ` +
+        `Missing: ${missing.join(', ')}.`
+      );
+    }
+
+    batchSelections.push(...parsed.batchSelections);
+    if (parsed.reply) replies.push(parsed.reply);
+  }
+
+  const totals = passes.reduce((sum, pass) => ({
+    wallMs: sum.wallMs + pass.wallMs,
+    promptChars: sum.promptChars + pass.promptChars,
+    prompt_eval_count: sum.prompt_eval_count + pass.prompt_eval_count,
+    eval_count: sum.eval_count + pass.eval_count,
+    prompt_eval_duration: sum.prompt_eval_duration + pass.prompt_eval_duration,
+    eval_duration: sum.eval_duration + pass.eval_duration,
+    total_duration: sum.total_duration + pass.total_duration
+  }), {
+    wallMs: 0,
+    promptChars: 0,
+    prompt_eval_count: 0,
+    eval_count: 0,
+    prompt_eval_duration: 0,
+    eval_duration: 0,
+    total_duration: 0
+  });
+
+  return {
+    model: chosen,
+    reply: replies.join(' '),
+    batchSelections,
+    requestCount,
+    chunkSize,
+    passes,
+    totals
+  };
 }
