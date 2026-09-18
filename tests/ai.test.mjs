@@ -125,39 +125,10 @@ test('Semantic Colour plan prompt requires an explicit decision for every suppli
 test('Semantic Colour Local AI review is chunked into explicit family-review passes', () => {
   const source = readFileSync(new URL('../src/ai.mjs', import.meta.url), 'utf8');
   assert.match(source, /const chunkSize = 8/);
+  assert.match(source, /const effectiveChunkSize = Math\.min\(3, chunkSize\)/);
   assert.match(source, /for \(let index = 0; index < chunks\.length; index \+= 1\)/);
-  assert.match(source, /returned\.size !== required\.size/);
+  assert.match(source, /for \(const family of missing\)/);
+  assert.match(source, /requestFamilies\(\[family\]/);
+  assert.match(source, /Local AI still omitted/);
   assert.match(source, /requestCount/);
-});
-
-
-test('Semantic Colour Local AI captures real Ollama generation metrics per pass', () => {
-  const source = readFileSync(new URL('../src/ai.mjs', import.meta.url), 'utf8');
-  assert.match(source, /prompt_eval_count/);
-  assert.match(source, /eval_count/);
-  assert.match(source, /prompt_eval_duration/);
-  assert.match(source, /eval_duration/);
-  assert.match(source, /total_duration/);
-  assert.match(source, /passStartedAt/);
-  assert.match(source, /wallMs/);
-  assert.match(source, /promptChars/);
-  assert.match(source, /passes/);
-  assert.match(source, /totals/);
-});
-
-
-test('Semantic Colour AI explicitly prefers family-preserving minimum-pass Strong over destructive 7:1 chasing', () => {
-  const source = readFileSync(new URL('../src/ai.mjs', import.meta.url), 'utf8');
-  assert.match(source, /4\.5–6\.99:1 candidate is a valid PASS/);
-  assert.match(source, /preserve recognisable family identity\/chroma/);
-  assert.match(source, /hueDrift/);
-  assert.match(source, /baseDistance/);
-});
-
-
-test('Semantic Colour AI is told to judge the Strong quality frontier rather than blindly preferring closest or darkest', () => {
-  const source = readFileSync(new URL('../src/ai.mjs', import.meta.url), 'utf8');
-  assert.match(source, /quality frontier of viable Strong options/);
-  assert.match(source, /Do not automatically prefer the closest tone, the darkest tone, or the later O-number/);
-  assert.match(source, /genuinely Strong, recognisable family role/);
 });

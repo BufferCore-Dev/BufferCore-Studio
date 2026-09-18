@@ -24,6 +24,7 @@ export function roleRank(name='',group=''){
   if(group==='Fill'){if(/Subtle/i.test(name))return 0;if(/Soft/i.test(name))return 1;if(/Strong/i.test(name))return 3;if(/Bold/i.test(name))return 4;return 2}
   if(group==='Border'){if(/Subtle/i.test(name))return 0;if(/Strong/i.test(name))return 2;if(/Bold/i.test(name))return 3;return 1}
   if(group==='Surface')return /Strong$/i.test(name)?1:0;
+  if(group==='Canvas'){if(/Primary/i.test(name))return 0;if(/Secondary/i.test(name))return 1;if(/Tertiary/i.test(name))return 2;}
   return 0;
 }
 export function familyForName(name='') { const lower=name.toLowerCase(); return FAMILY_KEYS.find(k=>lower.includes(k)) || 'general'; }
@@ -53,11 +54,12 @@ export function candidateEvidence(flavour,set,source,backgroundSource=null){
   return {source,value,contrast:ratio,meetsMinimum:minimum===null||ratio===null?null:ratio>=minimum,meetsRecommended:recommended===null||ratio===null?null:ratio>=recommended,perceptual};
 }
 
-function textTarget(set){const min=threshold(set.accessibilityMinimum)||0,rec=threshold(set.accessibilityRecommended)||min;const n=set.name||'';if(/Muted/i.test(n))return min+.15;if(/Subtle/i.test(n))return Math.max(min+.9,min+(rec-min)*.58);if(/Default/i.test(n))return Math.max(11,rec+4);if(isChromaticTextStrong(set))return rec;if(/Strong/i.test(n))return Math.max(min+.35,rec);return rec}
+function textTarget(set){const min=threshold(set.accessibilityMinimum)||0,rec=threshold(set.accessibilityRecommended)||min;const n=set.name||'';if(/Muted/i.test(n))return min+.15;if(/Subtle/i.test(n))return Math.max(min+.9,min+(rec-min)*.58);if(/Default/i.test(n))return Math.max(11,rec+4);if(isChromaticTextBase(set))return Math.max(min+.45,min+(rec-min)*.22);if(isChromaticTextStrong(set))return rec;if(/Strong/i.test(n))return Math.max(min+.35,rec);return rec}
 function siblingMinimum(set){
   const configured=Number(set?.selection?.visual?.minimumSiblingDeltaE);
   if(Number.isFinite(configured))return configured;
   if(set?.group==='Surface')return 10;
+  if(set?.group==='Canvas')return 4;
   if(set?.group==='Border')return 5;
   if(set?.group==='Fill')return 4;
   if(set?.group==='Text')return 4;
@@ -70,8 +72,61 @@ function siblingPreferred(set){
 function isChromaticTextStrong(set){
   return set?.group==='Text'&&/ Strong(?: Inverse)?$/i.test(set?.name||'')&&familyForName(set?.name)!=='neutral';
 }
+function isChromaticTextBase(set){
+  return set?.group==='Text'&&!/Strong/i.test(set?.name||'')&&familyForName(set?.name)!=='general'&&familyForName(set?.name)!=='neutral';
+}
+function isChromaticSurface(set){
+  return set?.group==='Surface'&&familyForName(set?.name)!=='general'&&familyForName(set?.name)!=='neutral';
+}
+
+function surfacePurpose(set,candidate){
+  const p=candidate?.perceptual;if(!p)return null;
+  const strong=/Strong$/i.test(set?.name||'');
+  const wantsLight=!strong;
+  const targetLightness=wantsLight?.89:.24;
+  const lightnessFit=Math.abs(p.lightness-targetLightness);
+  const endpointDistance=wantsLight?(p.distanceWhite??0):(p.distanceBlack??0);
+  return {strong,wantsLight,targetLightness,lightnessFit,endpointDistance};
+}
+
+function familyPreservingSurfaceCandidates(set,candidates=[]){
+  if(!isChromaticSurface(set))return candidates;
+  const usable=candidates.filter(c=>c.perceptual);
+  if(!usable.length)return candidates;
+
+  // Surface identity is a balance, not a maximum-chroma contest. First remove
+  // obvious endpoint/personality collapse where a healthier option exists,
+  // then keep a small Pareto frontier across purpose-fit and family character.
+  const healthy=usable.filter(c=>{
+    const p=c.perceptual, purpose=surfacePurpose(set,c);if(!purpose)return false;
+    const minimumRetention=purpose.wantsLight?.14:.32;
+    const minimumEndpoint=purpose.wantsLight?7:10;
+    return (p.chromaRetention??0)>=minimumRetention && purpose.endpointDistance>=minimumEndpoint;
+  });
+  const pool=healthy.length?healthy:usable;
+  const utility=c=>{
+    const p=c.perceptual,purpose=surfacePurpose(set,c);
+    return {
+      purpose:-purpose.lightnessFit,
+      chroma:Math.min(p.chromaRetention??0,.75),
+      hue:-(p.hueDrift??0),
+      endpoint:Math.min(purpose.endpointDistance,28),
+      baseDistance:Math.min(p.baseDistance??0,50)
+    };
+  };
+  const eps={purpose:.018,chroma:.035,hue:1.0,endpoint:1.0,baseDistance:1.5};
+  const dominates=(a,b)=>{
+    const A=utility(a),B=utility(b);
+    const noWorse=A.purpose>=B.purpose-eps.purpose&&A.chroma>=B.chroma-eps.chroma&&A.hue>=B.hue-eps.hue&&A.endpoint>=B.endpoint-eps.endpoint&&A.baseDistance>=B.baseDistance-eps.baseDistance;
+    const better=A.purpose>B.purpose+eps.purpose||A.chroma>B.chroma+eps.chroma||A.hue>B.hue+eps.hue||A.endpoint>B.endpoint+eps.endpoint||A.baseDistance>B.baseDistance+eps.baseDistance;
+    return noWorse&&better;
+  };
+  const frontier=pool.filter(candidate=>!pool.some(other=>other!==candidate&&dominates(other,candidate)));
+  return frontier.length?frontier:pool;
+}
 
 export function familyPreservingDesignCandidates(set,candidates=[]){
+  if(isChromaticSurface(set))return familyPreservingSurfaceCandidates(set,candidates);
   if(!isChromaticTextStrong(set))return candidates;
   const passing=candidates.filter(c=>c.meetsMinimum!==false&&c.perceptual);
   if(!passing.length)return candidates;
@@ -86,7 +141,13 @@ export function familyPreservingDesignCandidates(set,candidates=[]){
   })[0];
 
   const anchorRetention=anchor.perceptual?.chromaRetention??1;
-  const identityFloor=Math.min(anchorRetention,Math.max(.55,anchorRetention-.25));
+  // If the nearest readable tone has already lost substantial chroma (common
+  // with an extremely dark source in Dark mode), do not trap Strong on that
+  // exact same tone. Allow one further purposeful lift so Base and Strong can
+  // remain visibly distinct without opening the door to pale endpoint collapse.
+  const identityFloor=(set.mode==='dark'&&anchorRetention<.55)
+    ? Math.max(.16,anchorRetention-.14)
+    : Math.min(anchorRetention,Math.max(.55,anchorRetention-.25));
   const anchorHue=anchor.perceptual?.hueDrift??0;
   const anchorEndpoint=Math.min(anchor.perceptual?.distanceWhite??99,anchor.perceptual?.distanceBlack??99);
 
@@ -133,6 +194,13 @@ function visualPenalty(set,c){const p=c.perceptual;if(!p)return 0;let score=0;co
   if(chromatic&&p.chromaRetention<.16)score+=(.16-p.chromaRetention)*65;
   if(chromatic&&Math.min(p.distanceWhite??99,p.distanceBlack??99)<2.5)score+=9;
   if(set.group==='Text'&&typeof c.contrast==='number')score+=Math.abs(c.contrast-textTarget(set))*1.5;
+  if(isChromaticTextBase(set)&&set.mode==='dark'){
+    // Dark-mode family Base text is allowed to lift only as far as needed to
+    // become usable. Preserve the authored family before chasing excess contrast.
+    if(typeof p.chromaRetention==='number'&&p.chromaRetention<.62)score+=(.62-p.chromaRetention)*42;
+    if(typeof p.hueDrift==='number'&&p.hueDrift>10)score+=(p.hueDrift-10)*.28;
+    if(typeof p.baseDistance==='number')score+=Math.max(0,p.baseDistance-24)*.18;
+  }
   if(isChromaticTextStrong(set)&&typeof p.baseDistance==='number'){
     const preferred=siblingPreferred(set);
     if(p.baseDistance<preferred)score+=(preferred-p.baseDistance)*2.25;
@@ -144,12 +212,39 @@ function visualPenalty(set,c){const p=c.perceptual;if(!p)return 0;let score=0;co
     const endpointDistance=Math.min(p.distanceWhite??99,p.distanceBlack??99);
     if(endpointDistance<5)score+=(5-endpointDistance)*2.5;
   }
-  if(set.group==='Fill'){const targets=set.mode==='light'?[.94,.86,.68,.46,.26]:[.12,.22,.38,.60,.78];score+=Math.abs(p.lightness-targets[Math.min(roleRank(set.name,set.group),4)])*8}
-  if(set.group==='Border'&&typeof c.contrast==='number'){const rank=roleRank(set.name,set.group);const targets=[1.7,3.5,5.5,8];score+=Math.abs(c.contrast-targets[rank])*1.05}
+  if(set.group==='Fill'){const targets=set.mode==='light'?[.94,.86,.68,.46,.26]:[.17,.25,.40,.60,.78];score+=Math.abs(p.lightness-targets[Math.min(roleRank(set.name,set.group),4)])*8}
+  if(set.group==='Border'){
+    const rank=roleRank(set.name,set.group);
+    if(typeof c.contrast==='number'){const targets=[1.7,3.5,5.5,8];score+=Math.abs(c.contrast-targets[rank])*1.05}
+    const lightnessTargets=set.mode==='dark'?[.20,.42,.58,.72]:[.82,.58,.42,.28];
+    score+=Math.abs((p.lightness??lightnessTargets[rank])-lightnessTargets[rank])*5.5;
+  }
+  if(set.group==='Canvas'){
+    const rank=roleRank(set.name,set.group);
+    const targets=set.mode==='light'?[.97,.92,.86]:[.11,.17,.24];
+    const target=targets[Math.min(rank,targets.length-1)];
+    score+=Math.abs((p.lightness??target)-target)*44;
+    // Canvas is structural material: stay comfortably on the active mode side
+    // and avoid a "dark mode" canvas that is merely mid-tone or pale.
+    if(set.mode==='light'&&(p.lightness??0)<.76)score+=(.76-p.lightness)*120;
+    if(set.mode==='dark'&&(p.lightness??1)>.34)score+=(p.lightness-.34)*120;
+    if(typeof p.hueDrift==='number'&&p.hueDrift>12)score+=(p.hueDrift-12)*.2;
+  }
   if(set.group==='Surface'){
-    const strong=/Strong$/i.test(set.name);const wantsLight=(set.mode==='light'&&!strong)||(set.mode==='dark'&&strong);const endpoint=wantsLight?p.distanceWhite:p.distanceBlack;
-    if(endpoint!==null&&endpoint<(wantsLight?4:18))score+=((wantsLight?4:18)-endpoint)*6;
-    if(chromatic&&p.chromaRetention<(wantsLight?.08:.28))score+=((wantsLight?.08:.28)-p.chromaRetention)*110;
+    const strong=/Strong$/i.test(set.name);const wantsLight=!strong;const endpoint=wantsLight?p.distanceWhite:p.distanceBlack;
+    const targetLightness=wantsLight?.89:.24;
+    // Purpose first: normal Surface should feel like restrained background
+    // material, while Strong is its clearly opposing high-emphasis partner.
+    score+=Math.abs((p.lightness??targetLightness)-targetLightness)*34;
+    if(endpoint!==null&&endpoint<(wantsLight?7:10))score+=((wantsLight?7:10)-endpoint)*4.5;
+    if(chromatic){
+      const retentionFloor=wantsLight?.14:.32;
+      if(p.chromaRetention<retentionFloor)score+=(retentionFloor-p.chromaRetention)*145;
+      // Do not over-reward source fidelity when it makes the surface too close
+      // to the base colour for its background-material role.
+      const minBaseDistance=wantsLight?14:10;
+      if((p.baseDistance??99)<minBaseDistance)score+=(minBaseDistance-p.baseDistance)*1.15;
+    }
   }
   return score;
 }
@@ -198,7 +293,7 @@ export function buildSemanticDesignBatches(candidateSets){
   let n=0;const batches=[];
   for(const [key,items] of groups){
     if(items.every(item=>item.fixed))continue;
-    n++;const [group,...rest]=key.split(':');const label=rest.join(':');const adjustable=items.filter(item=>!item.fixed);const sequenceEligible=['Text','Fill','Border','Surface'].includes(group)&&items.length>1;let options=sequenceEligible?semanticSequenceOptions(items,5):[];
+    n++;const [group,...rest]=key.split(':');const label=rest.join(':');const adjustable=items.filter(item=>!item.fixed);const sequenceEligible=['Text','Fill','Border','Surface','Canvas'].includes(group)&&items.length>1;let options=sequenceEligible?semanticSequenceOptions(items,5):[];
     if(!options.length&&adjustable.length===1&&items.length===1){const set=adjustable[0];options=(set.candidateEvidence||[]).map((c,i)=>({id:`O${i+1}`,score:Number(candidateScore(set,c,0,1).toFixed(3)),allMinimumsMet:c.meetsMinimum!==false,choices:[{token:set.token,name:set.name,...c}],visualQuality:{minSiblingDistance:null,averageChromaRetention:Number((c.perceptual?.chromaRetention??1).toFixed(2)),endpointCollapses:Math.min(c.perceptual?.distanceWhite??99,c.perceptual?.distanceBlack??99)<2.5?1:0}})).sort((a,b)=>a.score-b.score).slice(0,5);}
     if(!options.length){const choices=items.map(set=>set.candidateEvidence?.[0]).filter(Boolean).map((c,i)=>({token:items[i].token,name:items[i].name,...c}));if(choices.length)options=[{id:'O1',score:999,allMinimumsMet:choices.every(c=>c.meetsMinimum!==false),choices,visualQuality:{minSiblingDistance:null,averageChromaRetention:1,endpointCollapses:0}}]}
     batches.push({id:`B${n}`,group,label,items,adjustable,options});

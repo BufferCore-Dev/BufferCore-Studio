@@ -1,0 +1,2343 @@
+{
+  "primitive": [
+    {
+      "group": "Identity",
+      "name": "Ramp 1",
+      "token": "--bc-color-identity-ramp-1",
+      "purpose": "Raw expressive colour family with no fixed semantic role.",
+      "notes": "Purpose is assigned later through Semantics.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Identity",
+      "name": "Ramp 2",
+      "token": "--bc-color-identity-ramp-2",
+      "purpose": "Raw expressive colour family with no fixed semantic role.",
+      "notes": "Purpose is assigned later through Semantics.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Identity",
+      "name": "Ramp 3",
+      "token": "--bc-color-identity-ramp-3",
+      "purpose": "Raw expressive colour family with no fixed semantic role.",
+      "notes": "Purpose is assigned later through Semantics.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Ground",
+      "name": "Ramp 1",
+      "token": "--bc-color-ground-ramp-1",
+      "purpose": "Raw structural colour family reserved for large-scale Canvas backgrounds.",
+      "notes": "Canvas-only Primitive source. Ground Ramp 1/2/3 map directly to Canvas Primary/Secondary/Tertiary at their base values; Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Ground",
+      "name": "Ramp 2",
+      "token": "--bc-color-ground-ramp-2",
+      "purpose": "Raw structural colour family reserved for large-scale Canvas backgrounds.",
+      "notes": "Canvas-only Primitive source. Ground Ramp 1/2/3 map directly to Canvas Primary/Secondary/Tertiary at their base values; Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Ground",
+      "name": "Ramp 3",
+      "token": "--bc-color-ground-ramp-3",
+      "purpose": "Raw structural colour family reserved for large-scale Canvas backgrounds.",
+      "notes": "Canvas-only Primitive source. Ground Ramp 1/2/3 map directly to Canvas Primary/Secondary/Tertiary at their base values; Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 0",
+      "token": "--bc-color-neutral-0",
+      "purpose": "Absolute lightest neutral.",
+      "notes": "Literal white. Does not flip between light and dark mode.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 5",
+      "token": "--bc-color-neutral-5",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 10",
+      "token": "--bc-color-neutral-10",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 15",
+      "token": "--bc-color-neutral-15",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 20",
+      "token": "--bc-color-neutral-20",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 25",
+      "token": "--bc-color-neutral-25",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 30",
+      "token": "--bc-color-neutral-30",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 35",
+      "token": "--bc-color-neutral-35",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 40",
+      "token": "--bc-color-neutral-40",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 45",
+      "token": "--bc-color-neutral-45",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 50",
+      "token": "--bc-color-neutral-50",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 55",
+      "token": "--bc-color-neutral-55",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 60",
+      "token": "--bc-color-neutral-60",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 65",
+      "token": "--bc-color-neutral-65",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 70",
+      "token": "--bc-color-neutral-70",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 75",
+      "token": "--bc-color-neutral-75",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 80",
+      "token": "--bc-color-neutral-80",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 85",
+      "token": "--bc-color-neutral-85",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 90",
+      "token": "--bc-color-neutral-90",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 95",
+      "token": "--bc-color-neutral-95",
+      "purpose": "Absolute neutral scale step.",
+      "notes": "Mode-independent Primitive value.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral 100",
+      "token": "--bc-color-neutral-100",
+      "purpose": "Absolute darkest neutral.",
+      "notes": "Literal black. Does not flip between light and dark mode.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Status",
+      "name": "Success",
+      "token": "--bc-color-status-success",
+      "purpose": "Source colour family for success/positive status treatments.",
+      "notes": "Generates a ramp for later purpose-led semantic mapping.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Status",
+      "name": "Warning",
+      "token": "--bc-color-status-warning",
+      "purpose": "Source colour family for warning/caution status treatments.",
+      "notes": "Generates a ramp for later purpose-led semantic mapping.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Status",
+      "name": "Error",
+      "token": "--bc-color-status-error",
+      "purpose": "Source colour family for error/destructive status treatments.",
+      "notes": "Generates a ramp for later purpose-led semantic mapping.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Status",
+      "name": "Info",
+      "token": "--bc-color-status-info",
+      "purpose": "Source colour family for informational status treatments.",
+      "notes": "Generates a ramp for later purpose-led semantic mapping.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link",
+      "token": "--bc-color-interaction-link",
+      "purpose": "Default site-wide link colour source.",
+      "notes": "Can be independent from Identity colours.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Inverse",
+      "token": "--bc-color-interaction-link-inverse",
+      "purpose": "Link colour source for inverse/opposite contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Visited",
+      "token": "--bc-color-interaction-link-visited",
+      "purpose": "Visited-link colour source.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Visited Inverse",
+      "token": "--bc-color-interaction-link-visited-inverse",
+      "purpose": "Visited-link colour source for inverse/opposite contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Focus",
+      "token": "--bc-color-interaction-focus",
+      "purpose": "Default site-wide focus indicator colour source.",
+      "notes": "Can deliberately be distinctive from the Identity palette.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Focus Inverse",
+      "token": "--bc-color-interaction-focus-inverse",
+      "purpose": "Focus indicator colour source for inverse/opposite contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    }
+  ],
+  "semantic": [
+    {
+      "group": "Tones / Design Material",
+      "name": "Primary",
+      "token": "--bc-color-primary-*",
+      "purpose": "Primary expressive colour family for site-specific design.",
+      "notes": "Mapped from an approved Core Primitive ramp. Full generated tonal range available.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Tones / Design Material",
+      "name": "Secondary",
+      "token": "--bc-color-secondary-*",
+      "purpose": "Secondary expressive colour family for site-specific design.",
+      "notes": "Mapped from an approved Core Primitive ramp. Full generated tonal range available.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Tones / Design Material",
+      "name": "Accent",
+      "token": "--bc-color-accent-*",
+      "purpose": "Accent expressive colour family for site-specific design.",
+      "notes": "Mapped from an approved Core Primitive ramp. Full generated tonal range available.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Tones / Design Material",
+      "name": "Neutral",
+      "token": "--bc-color-neutral-*",
+      "purpose": "Absolute neutral design scale for flexible site-specific use.",
+      "notes": "Neutral 0 through Neutral 100. Does not flip between modes.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Muted",
+      "token": "--bc-color-text-muted",
+      "purpose": "Lowest-emphasis general readable text.",
+      "notes": "Hard General Text rule: use the weakest Neutral foreground that still clears the 4.5:1 minimum against the actual normal context. Do not strengthen Muted merely to chase 7:1.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Subtle",
+      "token": "--bc-color-text-subtle",
+      "purpose": "Supporting and secondary general text.",
+      "notes": "Hard General Text rule: choose a perceptual middle ground between Muted and Default with meaningful visual distinction from both. Minimum contrast 4.5:1.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Default",
+      "token": "--bc-color-text",
+      "purpose": "Default body and general UI text.",
+      "notes": "Hard General Text rule: main foreground. On a light normal context use Neutral 90 or Neutral 100 (black). Minimum 4.5:1; 7:1 recommended.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Inverse Muted",
+      "token": "--bc-color-text-inverse-muted",
+      "purpose": "Lowest-emphasis general text in inverse contexts.",
+      "notes": "Hard General Text inverse rule: use the weakest light-side Neutral foreground that still clears the 4.5:1 minimum against the actual inverse context. Do not strengthen Muted merely to chase 7:1.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Inverse Subtle",
+      "token": "--bc-color-text-inverse-subtle",
+      "purpose": "Supporting general text in inverse contexts.",
+      "notes": "Hard General Text inverse rule: choose a perceptual middle ground between Inverse Muted and Inverse Default with meaningful visual distinction from both. Minimum contrast 4.5:1.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Inverse Default",
+      "token": "--bc-color-text-inverse",
+      "purpose": "Default general text in inverse contexts.",
+      "notes": "Hard General Text inverse rule: main foreground. On a dark/inverse context use Neutral 10 or Neutral 0 (white). Minimum 4.5:1; 7:1 recommended.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary",
+      "token": "--bc-color-text-primary",
+      "purpose": "Base Primary-family text colour.",
+      "notes": "Uses the exact approved Primary semantic base colour. Accessibility is context-dependent; use Text Primary Strong when a guaranteed readable Primary-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary Strong",
+      "token": "--bc-color-text-primary-strong",
+      "purpose": "Darker or stronger readable Primary-family text.",
+      "notes": "Minimum contrast 4.5:1. Selected only from the approved Primary ramp. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary Strong Inverse",
+      "token": "--bc-color-text-primary-strong-inverse",
+      "purpose": "Stronger Primary-family text for inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary",
+      "token": "--bc-color-text-secondary",
+      "purpose": "Base Secondary-family text colour.",
+      "notes": "Uses the exact approved Secondary semantic base colour. Accessibility is context-dependent; use Text Secondary Strong when a guaranteed readable Secondary-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary Strong",
+      "token": "--bc-color-text-secondary-strong",
+      "purpose": "Darker or stronger readable Secondary-family text.",
+      "notes": "Minimum contrast 4.5:1. Selected only from the approved Secondary ramp. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary Strong Inverse",
+      "token": "--bc-color-text-secondary-strong-inverse",
+      "purpose": "Stronger Secondary-family text for inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent",
+      "token": "--bc-color-text-accent",
+      "purpose": "Base Accent-family text colour.",
+      "notes": "Uses the exact approved Accent semantic base colour. Accessibility is context-dependent; use Text Accent Strong when a guaranteed readable Accent-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent Strong",
+      "token": "--bc-color-text-accent-strong",
+      "purpose": "Darker or stronger readable Accent-family text.",
+      "notes": "Minimum contrast 4.5:1. Selected only from the approved Accent ramp. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent Strong Inverse",
+      "token": "--bc-color-text-accent-strong-inverse",
+      "purpose": "Stronger Accent-family text for inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Success",
+      "token": "--bc-color-text-success",
+      "purpose": "Base Success-family text colour.",
+      "notes": "Uses the exact approved Success semantic base colour. Accessibility is context-dependent; use Text Success Strong when a guaranteed readable Success-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Success Strong",
+      "token": "--bc-color-text-success-strong",
+      "purpose": "Higher-emphasis Success text.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Success Strong Inverse",
+      "token": "--bc-color-text-success-strong-inverse",
+      "purpose": "Higher-emphasis Success text in inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Warning",
+      "token": "--bc-color-text-warning",
+      "purpose": "Base Warning-family text colour.",
+      "notes": "Uses the exact approved Warning semantic base colour. Accessibility is context-dependent; use Text Warning Strong when a guaranteed readable Warning-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Warning Strong",
+      "token": "--bc-color-text-warning-strong",
+      "purpose": "Higher-emphasis Warning text.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Warning Strong Inverse",
+      "token": "--bc-color-text-warning-strong-inverse",
+      "purpose": "Higher-emphasis Warning text in inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Error",
+      "token": "--bc-color-text-error",
+      "purpose": "Base Error-family text colour.",
+      "notes": "Uses the exact approved Error semantic base colour. Accessibility is context-dependent; use Text Error Strong when a guaranteed readable Error-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Error Strong",
+      "token": "--bc-color-text-error-strong",
+      "purpose": "Higher-emphasis Error text.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Error Strong Inverse",
+      "token": "--bc-color-text-error-strong-inverse",
+      "purpose": "Higher-emphasis Error text in inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Info",
+      "token": "--bc-color-text-info",
+      "purpose": "Base Info-family text colour.",
+      "notes": "Uses the exact approved Info semantic base colour. Accessibility is context-dependent; use Text Info Strong when a guaranteed readable Info-family variant is required.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Info Strong",
+      "token": "--bc-color-text-info-strong",
+      "purpose": "Higher-emphasis Info text.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Text",
+      "name": "Text Info Strong Inverse",
+      "token": "--bc-color-text-info-strong-inverse",
+      "purpose": "Higher-emphasis Info text in inverse contexts.",
+      "notes": "Minimum contrast 4.5:1. Readable variant: minimum contrast 4.5:1; BufferCore recommended target 7:1 while preserving family character.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Canvas",
+      "name": "Canvas Primary",
+      "token": "--bc-color-canvas-primary",
+      "purpose": "Canvas Primary large-scale page and structural background.",
+      "notes": "Hard mapping: uses Ground Ramp 1 base (--bc-color-ground-ramp-1) exactly in both Light and Dark modes. Ground is reserved for Canvas and is not used by Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Canvas",
+      "name": "Canvas Secondary",
+      "token": "--bc-color-canvas-secondary",
+      "purpose": "Canvas Secondary large-scale page and structural background.",
+      "notes": "Hard mapping: uses Ground Ramp 2 base (--bc-color-ground-ramp-2) exactly in both Light and Dark modes. Ground is reserved for Canvas and is not used by Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Canvas",
+      "name": "Canvas Tertiary",
+      "token": "--bc-color-canvas-tertiary",
+      "purpose": "Canvas Tertiary large-scale page and structural background.",
+      "notes": "Hard mapping: uses Ground Ramp 3 base (--bc-color-ground-ramp-3) exactly in both Light and Dark modes. Ground is reserved for Canvas and is not used by Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Subtle",
+      "token": "--bc-color-fill-neutral-subtle",
+      "purpose": "Lowest-emphasis Neutral fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Soft",
+      "token": "--bc-color-fill-neutral-soft",
+      "purpose": "Low-emphasis Neutral fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral",
+      "token": "--bc-color-fill-neutral",
+      "purpose": "Base Neutral fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Strong",
+      "token": "--bc-color-fill-neutral-strong",
+      "purpose": "High-emphasis Neutral fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Bold",
+      "token": "--bc-color-fill-neutral-bold",
+      "purpose": "Highest-emphasis Neutral fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Subtle",
+      "token": "--bc-color-fill-primary-subtle",
+      "purpose": "Lowest-emphasis Primary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Soft",
+      "token": "--bc-color-fill-primary-soft",
+      "purpose": "Low-emphasis Primary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary",
+      "token": "--bc-color-fill-primary",
+      "purpose": "Base Primary fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Strong",
+      "token": "--bc-color-fill-primary-strong",
+      "purpose": "High-emphasis Primary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Bold",
+      "token": "--bc-color-fill-primary-bold",
+      "purpose": "Highest-emphasis Primary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Subtle",
+      "token": "--bc-color-fill-secondary-subtle",
+      "purpose": "Lowest-emphasis Secondary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Soft",
+      "token": "--bc-color-fill-secondary-soft",
+      "purpose": "Low-emphasis Secondary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary",
+      "token": "--bc-color-fill-secondary",
+      "purpose": "Base Secondary fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Strong",
+      "token": "--bc-color-fill-secondary-strong",
+      "purpose": "High-emphasis Secondary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Bold",
+      "token": "--bc-color-fill-secondary-bold",
+      "purpose": "Highest-emphasis Secondary fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Subtle",
+      "token": "--bc-color-fill-accent-subtle",
+      "purpose": "Lowest-emphasis Accent fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Soft",
+      "token": "--bc-color-fill-accent-soft",
+      "purpose": "Low-emphasis Accent fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent",
+      "token": "--bc-color-fill-accent",
+      "purpose": "Base Accent fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Strong",
+      "token": "--bc-color-fill-accent-strong",
+      "purpose": "High-emphasis Accent fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Bold",
+      "token": "--bc-color-fill-accent-bold",
+      "purpose": "Highest-emphasis Accent fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Success Subtle",
+      "token": "--bc-color-fill-success-subtle",
+      "purpose": "Lowest-emphasis Success fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Success Soft",
+      "token": "--bc-color-fill-success-soft",
+      "purpose": "Low-emphasis Success fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Success",
+      "token": "--bc-color-fill-success",
+      "purpose": "Base Success fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Success Strong",
+      "token": "--bc-color-fill-success-strong",
+      "purpose": "High-emphasis Success fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Success Bold",
+      "token": "--bc-color-fill-success-bold",
+      "purpose": "Highest-emphasis Success fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Warning Subtle",
+      "token": "--bc-color-fill-warning-subtle",
+      "purpose": "Lowest-emphasis Warning fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Warning Soft",
+      "token": "--bc-color-fill-warning-soft",
+      "purpose": "Low-emphasis Warning fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Warning",
+      "token": "--bc-color-fill-warning",
+      "purpose": "Base Warning fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Warning Strong",
+      "token": "--bc-color-fill-warning-strong",
+      "purpose": "High-emphasis Warning fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Warning Bold",
+      "token": "--bc-color-fill-warning-bold",
+      "purpose": "Highest-emphasis Warning fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Error Subtle",
+      "token": "--bc-color-fill-error-subtle",
+      "purpose": "Lowest-emphasis Error fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Error Soft",
+      "token": "--bc-color-fill-error-soft",
+      "purpose": "Low-emphasis Error fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Error",
+      "token": "--bc-color-fill-error",
+      "purpose": "Base Error fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Error Strong",
+      "token": "--bc-color-fill-error-strong",
+      "purpose": "High-emphasis Error fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Error Bold",
+      "token": "--bc-color-fill-error-bold",
+      "purpose": "Highest-emphasis Error fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Info Subtle",
+      "token": "--bc-color-fill-info-subtle",
+      "purpose": "Lowest-emphasis Info fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 80\u201390 / Dark Shade 80\u201390. Must remain strongly perceptually distinct from Soft.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Info Soft",
+      "token": "--bc-color-fill-info-soft",
+      "purpose": "Low-emphasis Info fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Tint 50\u201360 / Dark Shade 50\u201360. Must remain strongly perceptually distinct from Subtle and Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Info",
+      "token": "--bc-color-fill-info",
+      "purpose": "Base Info fill treatment.",
+      "notes": "Hard Fill Base mapping: exact approved family Base. Neutral uses Neutral 50. AI cannot remap Base.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Info Strong",
+      "token": "--bc-color-fill-info-strong",
+      "purpose": "High-emphasis Info fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 20\u201340 / Dark Tint 20\u201340. Base remains fixed and is never moved to make room.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Info Bold",
+      "token": "--bc-color-fill-info-bold",
+      "purpose": "Highest-emphasis Info fill treatment.",
+      "notes": "Five-level Fill contract. Hard band: Light Shade 50\u201370 / Dark Tint 50\u201370. Deepest useful rich fill; must retain recognisable family character.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral Subtle",
+      "token": "--bc-color-border-neutral-subtle",
+      "purpose": "Lowest-emphasis Neutral border treatment.",
+      "notes": "Part of the shared five-level Border strength contract.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral",
+      "token": "--bc-color-border-neutral",
+      "purpose": "Base Neutral border treatment.",
+      "notes": "Default/base value in the shared Border strength contract.",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral Strong",
+      "token": "--bc-color-border-neutral-strong",
+      "purpose": "High-emphasis Neutral border treatment.",
+      "notes": "Part of the shared five-level Border strength contract.",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral Bold",
+      "token": "--bc-color-border-neutral-bold",
+      "purpose": "Highest-emphasis Neutral border treatment.",
+      "notes": "Part of the shared five-level Border strength contract.",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary Subtle",
+      "token": "--bc-color-border-primary-subtle",
+      "purpose": "Lowest-emphasis Primary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary",
+      "token": "--bc-color-border-primary",
+      "purpose": "Base Primary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary Strong",
+      "token": "--bc-color-border-primary-strong",
+      "purpose": "High-emphasis Primary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary Bold",
+      "token": "--bc-color-border-primary-bold",
+      "purpose": "Highest-emphasis Primary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary Subtle",
+      "token": "--bc-color-border-secondary-subtle",
+      "purpose": "Lowest-emphasis Secondary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary",
+      "token": "--bc-color-border-secondary",
+      "purpose": "Base Secondary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary Strong",
+      "token": "--bc-color-border-secondary-strong",
+      "purpose": "High-emphasis Secondary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary Bold",
+      "token": "--bc-color-border-secondary-bold",
+      "purpose": "Highest-emphasis Secondary border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent Subtle",
+      "token": "--bc-color-border-accent-subtle",
+      "purpose": "Lowest-emphasis Accent border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent",
+      "token": "--bc-color-border-accent",
+      "purpose": "Base Accent border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent Strong",
+      "token": "--bc-color-border-accent-strong",
+      "purpose": "High-emphasis Accent border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent Bold",
+      "token": "--bc-color-border-accent-bold",
+      "purpose": "Highest-emphasis Accent border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Success Subtle",
+      "token": "--bc-color-border-success-subtle",
+      "purpose": "Lowest-emphasis Success border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Success",
+      "token": "--bc-color-border-success",
+      "purpose": "Base Success border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Success Strong",
+      "token": "--bc-color-border-success-strong",
+      "purpose": "High-emphasis Success border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Success Bold",
+      "token": "--bc-color-border-success-bold",
+      "purpose": "Highest-emphasis Success border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Warning Subtle",
+      "token": "--bc-color-border-warning-subtle",
+      "purpose": "Lowest-emphasis Warning border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Warning",
+      "token": "--bc-color-border-warning",
+      "purpose": "Base Warning border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Warning Strong",
+      "token": "--bc-color-border-warning-strong",
+      "purpose": "High-emphasis Warning border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Warning Bold",
+      "token": "--bc-color-border-warning-bold",
+      "purpose": "Highest-emphasis Warning border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Error Subtle",
+      "token": "--bc-color-border-error-subtle",
+      "purpose": "Lowest-emphasis Error border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Error",
+      "token": "--bc-color-border-error",
+      "purpose": "Base Error border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Error Strong",
+      "token": "--bc-color-border-error-strong",
+      "purpose": "High-emphasis Error border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Error Bold",
+      "token": "--bc-color-border-error-bold",
+      "purpose": "Highest-emphasis Error border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Info Subtle",
+      "token": "--bc-color-border-info-subtle",
+      "purpose": "Lowest-emphasis Info border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Info",
+      "token": "--bc-color-border-info",
+      "purpose": "Base Info border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Info Strong",
+      "token": "--bc-color-border-info-strong",
+      "purpose": "High-emphasis Info border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Border",
+      "name": "Border Info Bold",
+      "token": "--bc-color-border-info-bold",
+      "purpose": "Highest-emphasis Info border treatment.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Link",
+      "token": "--bc-color-link",
+      "purpose": "Default interactive link colour.",
+      "notes": "Dedicated site-wide link colour. If colour alone distinguishes the link from surrounding text, maintain at least 3:1 against that surrounding text or provide a non-colour cue such as an underline.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Inverse",
+      "token": "--bc-color-link-inverse",
+      "purpose": "Link colour for inverse or opposing contexts.",
+      "notes": "If colour alone distinguishes the link from surrounding text, maintain at least 3:1 against that surrounding text or provide a non-colour cue such as an underline.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Visited",
+      "token": "--bc-color-link-visited",
+      "purpose": "Visited link colour.",
+      "notes": "If colour alone distinguishes the link from surrounding text, maintain at least 3:1 against that surrounding text or provide a non-colour cue such as an underline.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Visited Inverse",
+      "token": "--bc-color-link-visited-inverse",
+      "purpose": "Visited link colour for inverse or opposing contexts.",
+      "notes": "If colour alone distinguishes the link from surrounding text, maintain at least 3:1 against that surrounding text or provide a non-colour cue such as an underline.",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Focus",
+      "token": "--bc-color-focus",
+      "purpose": "Default focus indicator colour.",
+      "notes": "Dedicated accessibility and interaction colour.",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Focus Inverse",
+      "token": "--bc-color-focus-inverse",
+      "purpose": "Focus indicator colour for inverse or opposing contexts.",
+      "notes": "",
+      "accessibilityMinimum": "3:1",
+      "accessibilityRecommended": "4.5:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Placeholder",
+      "token": "--bc-color-placeholder",
+      "purpose": "Placeholder text colour for controls and inputs.",
+      "notes": "",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Interaction",
+      "name": "Placeholder Inverse",
+      "token": "--bc-color-placeholder-inverse",
+      "purpose": "Placeholder text colour for inverse or opposing control contexts.",
+      "notes": "",
+      "accessibilityMinimum": "4.5:1",
+      "accessibilityRecommended": "7:1"
+    },
+    {
+      "group": "Overlay",
+      "name": "Overlay Soft",
+      "token": "--bc-color-overlay-soft",
+      "purpose": "Low-emphasis overlay or scrim treatment.",
+      "notes": "Used where content should remain clearly visible beneath the overlay.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Overlay",
+      "name": "Overlay",
+      "token": "--bc-color-overlay",
+      "purpose": "Default overlay or scrim treatment.",
+      "notes": "Standard backdrop treatment for modals, drawers and layered UI.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Overlay",
+      "name": "Overlay Strong",
+      "token": "--bc-color-overlay-strong",
+      "purpose": "High-emphasis overlay or scrim treatment.",
+      "notes": "Used when underlying content should be more heavily obscured.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Primary",
+      "token": "--bc-color-surface-general-primary",
+      "purpose": "Primary general-purpose contained UI surface using the Neutral family.",
+      "notes": "General Surface is Neutral-derived. Primary is one of three independent general Neutral surface options. Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Primary Strong",
+      "token": "--bc-color-surface-general-primary-strong",
+      "purpose": "Primary general-purpose contained UI surface using the Neutral family; strong/opposing treatment.",
+      "notes": "General Surface is Neutral-derived. Primary is one of three independent general Neutral surface options. Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Secondary",
+      "token": "--bc-color-surface-general-secondary",
+      "purpose": "Secondary general-purpose contained UI surface using the Neutral family.",
+      "notes": "General Surface is Neutral-derived. Secondary is one of three independent general Neutral surface options. Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Secondary Strong",
+      "token": "--bc-color-surface-general-secondary-strong",
+      "purpose": "Secondary general-purpose contained UI surface using the Neutral family; strong/opposing treatment.",
+      "notes": "General Surface is Neutral-derived. Secondary is one of three independent general Neutral surface options. Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Tertiary",
+      "token": "--bc-color-surface-general-tertiary",
+      "purpose": "Tertiary general-purpose contained UI surface using the Neutral family.",
+      "notes": "General Surface is Neutral-derived. Tertiary is one of three independent general Neutral surface options. Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Tertiary Strong",
+      "token": "--bc-color-surface-general-tertiary-strong",
+      "purpose": "Tertiary general-purpose contained UI surface using the Neutral family; strong/opposing treatment.",
+      "notes": "General Surface is Neutral-derived. Tertiary is one of three independent general Neutral surface options. Ground does not power Surface.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Primary",
+      "token": "--bc-color-surface-identity-primary",
+      "purpose": "Contained UI surface using the Primary Identity colour family.",
+      "notes": "Mapped from the approved Primary tonal family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Primary Strong",
+      "token": "--bc-color-surface-identity-primary-strong",
+      "purpose": "Stronger Primary Identity-coloured surface.",
+      "notes": "Higher-emphasis treatment from the Primary tonal family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Secondary",
+      "token": "--bc-color-surface-identity-secondary",
+      "purpose": "Contained UI surface using the Secondary Identity colour family.",
+      "notes": "Mapped from the approved Secondary tonal family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Secondary Strong",
+      "token": "--bc-color-surface-identity-secondary-strong",
+      "purpose": "Stronger Secondary Identity-coloured surface.",
+      "notes": "Higher-emphasis treatment from the Secondary tonal family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Accent",
+      "token": "--bc-color-surface-identity-accent",
+      "purpose": "Contained UI surface using the Accent Identity colour family.",
+      "notes": "Mapped from the approved Accent tonal family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Accent Strong",
+      "token": "--bc-color-surface-identity-accent-strong",
+      "purpose": "Stronger Accent Identity-coloured surface.",
+      "notes": "Higher-emphasis treatment from the Accent tonal family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Success",
+      "token": "--bc-color-surface-success",
+      "purpose": "Contained UI surface communicating a successful or positive status.",
+      "notes": "Mapped from the approved Success colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Success Strong",
+      "token": "--bc-color-surface-success-strong",
+      "purpose": "Stronger Success surface treatment.",
+      "notes": "Higher-emphasis treatment from the Success colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Warning",
+      "token": "--bc-color-surface-warning",
+      "purpose": "Contained UI surface communicating a warning or caution status.",
+      "notes": "Mapped from the approved Warning colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Warning Strong",
+      "token": "--bc-color-surface-warning-strong",
+      "purpose": "Stronger Warning surface treatment.",
+      "notes": "Higher-emphasis treatment from the Warning colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Error",
+      "token": "--bc-color-surface-error",
+      "purpose": "Contained UI surface communicating an error or destructive status.",
+      "notes": "Mapped from the approved Error colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Error Strong",
+      "token": "--bc-color-surface-error-strong",
+      "purpose": "Stronger Error surface treatment.",
+      "notes": "Higher-emphasis treatment from the Error colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Info",
+      "token": "--bc-color-surface-info",
+      "purpose": "Contained UI surface communicating an informational status.",
+      "notes": "Mapped from the approved Info colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Info Strong",
+      "token": "--bc-color-surface-info-strong",
+      "purpose": "Stronger Info surface treatment.",
+      "notes": "Higher-emphasis treatment from the Info colour family.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    }
+  ],
+  "utility": [
+    {
+      "group": "Identity",
+      "name": "Primary Tones",
+      "token": ".bc-color-primary-*",
+      "purpose": "Direct utility access to the full Semantic Primary tonal family.",
+      "notes": "Consumes Semantic Primary tones only. Never references Primitive Identity Ramp 1 directly.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Identity",
+      "name": "Secondary Tones",
+      "token": ".bc-color-secondary-*",
+      "purpose": "Direct utility access to the full Semantic Secondary tonal family.",
+      "notes": "Consumes Semantic Secondary tones only. Never references Primitive Identity Ramp 2 directly.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Identity",
+      "name": "Accent Tones",
+      "token": ".bc-color-accent-*",
+      "purpose": "Direct utility access to the full Semantic Accent tonal family.",
+      "notes": "Consumes Semantic Accent tones only. Never references Primitive Identity Ramp 3 directly.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Neutral",
+      "name": "Neutral Scale",
+      "token": ".bc-color-neutral-*",
+      "purpose": "Direct utility access to the full Semantic Neutral 0\u2013100 scale.",
+      "notes": "Consumes Semantic Neutral values only.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Muted",
+      "token": ".bc-color-text-muted",
+      "purpose": "Apply the Semantic Text Muted colour.",
+      "notes": "Consumes --bc-color-text-muted.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Subtle",
+      "token": ".bc-color-text-subtle",
+      "purpose": "Apply the Semantic Text Subtle colour.",
+      "notes": "Consumes --bc-color-text-subtle.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text",
+      "token": ".bc-color-text",
+      "purpose": "Apply the default Semantic text colour.",
+      "notes": "Consumes --bc-color-text.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Inverse Muted",
+      "token": ".bc-color-text-inverse-muted",
+      "purpose": "Apply muted general text for inverse contexts.",
+      "notes": "Consumes --bc-color-text-inverse-muted.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Inverse Subtle",
+      "token": ".bc-color-text-inverse-subtle",
+      "purpose": "Apply subtle general text for inverse contexts.",
+      "notes": "Consumes --bc-color-text-inverse-subtle.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Inverse",
+      "token": ".bc-color-text-inverse",
+      "purpose": "Apply the default general text colour for inverse contexts.",
+      "notes": "Consumes --bc-color-text-inverse.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary",
+      "token": ".bc-color-text-primary",
+      "purpose": "Apply the base Semantic Primary text colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary Strong",
+      "token": ".bc-color-text-primary-strong",
+      "purpose": "Apply the Semantic Primary Strong text colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary Inverse",
+      "token": ".bc-color-text-primary-inverse",
+      "purpose": "Apply Primary text for inverse contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Primary Inverse Strong",
+      "token": ".bc-color-text-primary-inverse-strong",
+      "purpose": "Apply Primary Strong text for inverse contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary",
+      "token": ".bc-color-text-secondary",
+      "purpose": "Apply the base Semantic Secondary text colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary Strong",
+      "token": ".bc-color-text-secondary-strong",
+      "purpose": "Apply the Semantic Secondary Strong text colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary Inverse",
+      "token": ".bc-color-text-secondary-inverse",
+      "purpose": "Apply Secondary text for inverse contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Secondary Inverse Strong",
+      "token": ".bc-color-text-secondary-inverse-strong",
+      "purpose": "Apply Secondary Strong text for inverse contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent",
+      "token": ".bc-color-text-accent",
+      "purpose": "Apply the base Semantic Accent text colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent Strong",
+      "token": ".bc-color-text-accent-strong",
+      "purpose": "Apply the Semantic Accent Strong text colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent Inverse",
+      "token": ".bc-color-text-accent-inverse",
+      "purpose": "Apply Accent text for inverse contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Text",
+      "name": "Text Accent Inverse Strong",
+      "token": ".bc-color-text-accent-inverse-strong",
+      "purpose": "Apply Accent Strong text for inverse contexts.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Canvas",
+      "name": "Canvas Primary",
+      "token": ".bc-color-canvas-primary",
+      "purpose": "Apply the Semantic Canvas Primary background.",
+      "notes": "Consumes --bc-color-canvas-primary.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Canvas",
+      "name": "Canvas Secondary",
+      "token": ".bc-color-canvas-secondary",
+      "purpose": "Apply the Semantic Canvas Secondary background.",
+      "notes": "Consumes --bc-color-canvas-secondary.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Canvas",
+      "name": "Canvas Tertiary",
+      "token": ".bc-color-canvas-tertiary",
+      "purpose": "Apply the Semantic Canvas Tertiary background.",
+      "notes": "Consumes --bc-color-canvas-tertiary.",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Primary",
+      "token": ".bc-color-surface-general-primary",
+      "purpose": "Apply the Primary general Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Primary Strong",
+      "token": ".bc-color-surface-general-primary-strong",
+      "purpose": "Apply the stronger Primary general Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Secondary",
+      "token": ".bc-color-surface-general-secondary",
+      "purpose": "Apply the Secondary general Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Secondary Strong",
+      "token": ".bc-color-surface-general-secondary-strong",
+      "purpose": "Apply the stronger Secondary general Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Tertiary",
+      "token": ".bc-color-surface-general-tertiary",
+      "purpose": "Apply the Tertiary general Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface General Tertiary Strong",
+      "token": ".bc-color-surface-general-tertiary-strong",
+      "purpose": "Apply the stronger Tertiary general Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Primary",
+      "token": ".bc-color-surface-identity-primary",
+      "purpose": "Apply the Primary Identity Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Primary Strong",
+      "token": ".bc-color-surface-identity-primary-strong",
+      "purpose": "Apply the stronger Primary Identity Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Secondary",
+      "token": ".bc-color-surface-identity-secondary",
+      "purpose": "Apply the Secondary Identity Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Secondary Strong",
+      "token": ".bc-color-surface-identity-secondary-strong",
+      "purpose": "Apply the stronger Secondary Identity Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Accent",
+      "token": ".bc-color-surface-identity-accent",
+      "purpose": "Apply the Accent Identity Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Surface",
+      "name": "Surface Identity Accent Strong",
+      "token": ".bc-color-surface-identity-accent-strong",
+      "purpose": "Apply the stronger Accent Identity Semantic Surface.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Subtle",
+      "token": ".bc-color-fill-neutral-subtle",
+      "purpose": "Apply the lowest-emphasis Neutral Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Soft",
+      "token": ".bc-color-fill-neutral-soft",
+      "purpose": "Apply the low-emphasis Neutral Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral",
+      "token": ".bc-color-fill-neutral",
+      "purpose": "Apply the base Neutral Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Strong",
+      "token": ".bc-color-fill-neutral-strong",
+      "purpose": "Apply the high-emphasis Neutral Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Neutral Bold",
+      "token": ".bc-color-fill-neutral-bold",
+      "purpose": "Apply the highest-emphasis Neutral Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Subtle",
+      "token": ".bc-color-fill-primary-subtle",
+      "purpose": "Apply the lowest-emphasis Primary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Soft",
+      "token": ".bc-color-fill-primary-soft",
+      "purpose": "Apply the low-emphasis Primary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary",
+      "token": ".bc-color-fill-primary",
+      "purpose": "Apply the base Primary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Strong",
+      "token": ".bc-color-fill-primary-strong",
+      "purpose": "Apply the high-emphasis Primary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Primary Bold",
+      "token": ".bc-color-fill-primary-bold",
+      "purpose": "Apply the highest-emphasis Primary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Subtle",
+      "token": ".bc-color-fill-secondary-subtle",
+      "purpose": "Apply the lowest-emphasis Secondary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Soft",
+      "token": ".bc-color-fill-secondary-soft",
+      "purpose": "Apply the low-emphasis Secondary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary",
+      "token": ".bc-color-fill-secondary",
+      "purpose": "Apply the base Secondary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Strong",
+      "token": ".bc-color-fill-secondary-strong",
+      "purpose": "Apply the high-emphasis Secondary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Secondary Bold",
+      "token": ".bc-color-fill-secondary-bold",
+      "purpose": "Apply the highest-emphasis Secondary Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Subtle",
+      "token": ".bc-color-fill-accent-subtle",
+      "purpose": "Apply the lowest-emphasis Accent Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Soft",
+      "token": ".bc-color-fill-accent-soft",
+      "purpose": "Apply the low-emphasis Accent Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent",
+      "token": ".bc-color-fill-accent",
+      "purpose": "Apply the base Accent Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Strong",
+      "token": ".bc-color-fill-accent-strong",
+      "purpose": "Apply the high-emphasis Accent Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Fill",
+      "name": "Fill Accent Bold",
+      "token": ".bc-color-fill-accent-bold",
+      "purpose": "Apply the highest-emphasis Accent Semantic Fill.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral Subtle",
+      "token": ".bc-color-border-neutral-subtle",
+      "purpose": "Apply the lowest-emphasis Neutral Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral",
+      "token": ".bc-color-border-neutral",
+      "purpose": "Apply the base Neutral Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral Strong",
+      "token": ".bc-color-border-neutral-strong",
+      "purpose": "Apply the high-emphasis Neutral Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Neutral Bold",
+      "token": ".bc-color-border-neutral-bold",
+      "purpose": "Apply the highest-emphasis Neutral Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary Subtle",
+      "token": ".bc-color-border-primary-subtle",
+      "purpose": "Apply the lowest-emphasis Primary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary",
+      "token": ".bc-color-border-primary",
+      "purpose": "Apply the base Primary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary Strong",
+      "token": ".bc-color-border-primary-strong",
+      "purpose": "Apply the high-emphasis Primary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Primary Bold",
+      "token": ".bc-color-border-primary-bold",
+      "purpose": "Apply the highest-emphasis Primary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary Subtle",
+      "token": ".bc-color-border-secondary-subtle",
+      "purpose": "Apply the lowest-emphasis Secondary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary",
+      "token": ".bc-color-border-secondary",
+      "purpose": "Apply the base Secondary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary Strong",
+      "token": ".bc-color-border-secondary-strong",
+      "purpose": "Apply the high-emphasis Secondary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Secondary Bold",
+      "token": ".bc-color-border-secondary-bold",
+      "purpose": "Apply the highest-emphasis Secondary Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent Subtle",
+      "token": ".bc-color-border-accent-subtle",
+      "purpose": "Apply the lowest-emphasis Accent Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent",
+      "token": ".bc-color-border-accent",
+      "purpose": "Apply the base Accent Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent Strong",
+      "token": ".bc-color-border-accent-strong",
+      "purpose": "Apply the high-emphasis Accent Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Border",
+      "name": "Border Accent Bold",
+      "token": ".bc-color-border-accent-bold",
+      "purpose": "Apply the highest-emphasis Accent Semantic Border.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link",
+      "token": ".bc-color-link",
+      "purpose": "Apply the Semantic Link colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Inverse",
+      "token": ".bc-color-link-inverse",
+      "purpose": "Apply the Semantic Link Inverse colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Visited",
+      "token": ".bc-color-link-visited",
+      "purpose": "Apply the Semantic Visited Link colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Link Visited Inverse",
+      "token": ".bc-color-link-visited-inverse",
+      "purpose": "Apply the Semantic Visited Link Inverse colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Focus",
+      "token": ".bc-color-focus",
+      "purpose": "Apply the Semantic Focus colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Focus Inverse",
+      "token": ".bc-color-focus-inverse",
+      "purpose": "Apply the Semantic Focus Inverse colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Placeholder",
+      "token": ".bc-color-placeholder",
+      "purpose": "Apply the Semantic Placeholder colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Interaction",
+      "name": "Placeholder Inverse",
+      "token": ".bc-color-placeholder-inverse",
+      "purpose": "Apply the Semantic Placeholder Inverse colour.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Overlay",
+      "name": "Overlay Soft",
+      "token": ".bc-color-overlay-soft",
+      "purpose": "Apply the low-emphasis Semantic Overlay treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Overlay",
+      "name": "Overlay",
+      "token": ".bc-color-overlay",
+      "purpose": "Apply the default Semantic Overlay treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    },
+    {
+      "group": "Overlay",
+      "name": "Overlay Strong",
+      "token": ".bc-color-overlay-strong",
+      "purpose": "Apply the high-emphasis Semantic Overlay treatment.",
+      "notes": "",
+      "accessibilityMinimum": "",
+      "accessibilityRecommended": ""
+    }
+  ],
+  "metadata": {
+    "schemaVersion": 2,
+    "authority": "BufferCore Engine manifest",
+    "purpose": "Human-facing Colour Wizard guidance. Canonical token existence, Context slots and targets come from the live BufferCore Foundation contract.",
+    "semanticModel": "lean-current",
+    "disabledStateOwnership": "interaction",
+    "notes": [
+      "Family Base Inverse colour semantics are retired.",
+      "Chromatic readable inverse treatment uses Strong Inverse.",
+      "Disabled is an Interaction state transformation and is not a Colour family.",
+      "Colour Context is validated from foundationContracts/contextContracts rather than duplicated here."
+    ]
+  }
+}

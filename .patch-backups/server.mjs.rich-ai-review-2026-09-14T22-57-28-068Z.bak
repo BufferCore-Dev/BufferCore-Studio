@@ -94,19 +94,6 @@ function manifestSummary() {
   };
 }
 
-function activeColourMappings(flavour, mode) {
-  const raw = flavour?.semanticMappings?.colour?.[mode] || {};
-  const allowed = new Map(
-    buildSemanticCandidateSets(flavour, mode)
-      .map((set) => [set.token, new Set(set.candidates || [])])
-  );
-  const clean = {};
-  for (const [target, source] of Object.entries(raw)) {
-    if (allowed.get(target)?.has(source)) clean[target] = source;
-  }
-  return clean;
-}
-
 function currentPrimitiveCatalogue() {
   return primitiveCatalogue(readJson(engineManifestPath));
 }
@@ -278,7 +265,7 @@ const server = http.createServer(async (req, res) => {
       const mode = parts[5];
       const flavour = getFlavourDocument(flavoursRoot, id);
       if (!flavour) return sendJson(res, 404, { ok: false, error: 'Flavour not found.' });
-      const mappings = activeColourMappings(flavour, mode);
+      const mappings = flavour.semanticMappings?.colour?.[mode] || {};
       const candidateSets = buildSemanticCandidateSets(flavour, mode);
       return sendJson(res, 200, { ok: true, mode, mappings, candidateSets, completion: semanticCompletion(flavour, mode), findings: semanticFindings(flavour, mode, mappings) });
     }
@@ -291,7 +278,7 @@ const server = http.createServer(async (req, res) => {
       if (!flavour) return sendJson(res, 404, { ok: false, error: 'Flavour not found.' });
       const sets = buildSemanticCandidateSets(flavour, mode);
       const fixed = fixedSemanticMappings(flavour, mode);
-      const existing = activeColourMappings(flavour, mode);
+      const existing = flavour.semanticMappings?.colour?.[mode] || {};
       const batches = semanticDesignBatches(flavour, mode);
       const buildMode = data.buildMode === 'deterministic' ? 'deterministic' : 'ai';
       const startedAt = Date.now();

@@ -2,6 +2,7 @@ export const TONE_AMOUNTS=[90,80,70,60,50,40,30,20,10];
 export const SOURCE_GROUPS={
   identity:['--bc-color-identity-ramp-1','--bc-color-identity-ramp-2','--bc-color-identity-ramp-3'],
   ground:['--bc-color-ground-ramp-1','--bc-color-ground-ramp-2','--bc-color-ground-ramp-3'],
+  groundDark:['--bc-color-ground-dark-ramp-1','--bc-color-ground-dark-ramp-2','--bc-color-ground-dark-ramp-3'],
   neutral:['--bc-color-neutral-50'],
   status:['--bc-color-status-success','--bc-color-status-warning','--bc-color-status-error','--bc-color-status-info'],
   interaction:['--bc-color-interaction-link','--bc-color-interaction-link-inverse','--bc-color-interaction-link-visited','--bc-color-interaction-link-visited-inverse','--bc-color-interaction-focus','--bc-color-interaction-focus-inverse']
@@ -24,7 +25,21 @@ export function neutralScale(base='#808080'){const normal=normalizeHex(base)||'#
 
 export function generatedFamily(baseToken,base){const normal=normalizeHex(base);if(!normal)return{};const out={[baseToken]:normal};for(const tone of tones(normal)){if(tone.kind==='base')continue;out[`${baseToken}-${tone.suffix}`]=tone.value}return out}
 
-export function generatedOverrides(sourceToken,value,availableTokens=[]){const available=new Set(availableTokens);let generated={};if(sourceToken==='--bc-color-neutral-50')generated=neutralScale(value);else if(/^--bc-color-(?:identity-ramp-[123]|status-(?:success|warning|error|info))$/.test(sourceToken))generated=generatedFamily(sourceToken,value);else generated={[sourceToken]:normalizeHex(value)||String(value||'').trim()};return Object.fromEntries(Object.entries(generated).filter(([token])=>!available.size||available.has(token)))}
+const GUIDED_SOURCE_PATTERN=/^--bc-color-(?:identity-ramp-[123]|ground-(?:dark-)?ramp-[123]|status-(?:success|warning|error|info)|interaction-(?:link|link-inverse|link-visited|link-visited-inverse|focus|focus-inverse))$/;
 
-export function sourceTokens(){return Object.values(SOURCE_GROUPS).flat()}
+export function generatedOverrides(sourceToken,value,availableTokens=[]){
+  const available=new Set(availableTokens);
+  let generated={};
+  if(sourceToken==='--bc-color-neutral-50')generated=neutralScale(value);
+  else if(/^--bc-color-(?:identity-ramp-[123]|ground-(?:dark-)?ramp-[123]|status-(?:success|warning|error|info))$/.test(sourceToken))generated=generatedFamily(sourceToken,value);
+  else generated={[sourceToken]:normalizeHex(value)||String(value||'').trim()};
+
+  // Guided Colour source contracts are canonical Studio inputs. They must stay editable
+  // even when the generated Engine catalogue is temporarily stale after an overlay.
+  // Unknown/non-contract callers are still constrained by the supplied catalogue.
+  if(sourceToken==='--bc-color-neutral-50'||GUIDED_SOURCE_PATTERN.test(sourceToken))return generated;
+  return Object.fromEntries(Object.entries(generated).filter(([token])=>!available.size||available.has(token)));
+}
+
+export function sourceTokens(){return [...SOURCE_GROUPS.identity,...SOURCE_GROUPS.ground,...SOURCE_GROUPS.neutral,...SOURCE_GROUPS.status,...SOURCE_GROUPS.interaction]}
 export function completion(overrides={}){const required=sourceTokens();const complete=required.filter(token=>normalizeHex(overrides[token])).length;return{complete,total:required.length,missing:required.filter(token=>!normalizeHex(overrides[token]))}}

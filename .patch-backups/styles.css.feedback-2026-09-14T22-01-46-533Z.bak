@@ -885,12 +885,3 @@
 @media (prefers-reduced-motion:reduce){
   .studio-toast{transition:none}
 }
-
-/* Mode-aware Ground source editor */
-.ground-mode-block{display:grid;gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
-.ground-mode-block+.ground-mode-block{margin-top:16px}
-.ground-mode-block>header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
-.ground-mode-block>header h4{margin:3px 0 4px;font-size:1rem}
-.ground-mode-block>header p{margin:0;max-width:68ch;color:var(--text-muted)}
-.ground-mode-block>header>b{white-space:nowrap;font-size:.84rem;color:var(--text-muted)}
-.ground-mode-dark{background:color-mix(in srgb,var(--panel) 94%,#000 6%)}

@@ -143,7 +143,8 @@ test('Palette export contains source colours only rather than generated or Seman
   assert.match(app, /const sources=\{\}/);
   assert.match(app, /sources\[token\]=value/);
   assert.doesNotMatch(app, /function colourPaletteExportDocument\(\)[\s\S]{0,900}semanticMappings/);
-  assert.match(app, /17 Colour source values only/);
+  assert.match(app, /17 required Colour sources/);
+  assert.match(app, /dedicated Dark Ground set/);
 });
 
 

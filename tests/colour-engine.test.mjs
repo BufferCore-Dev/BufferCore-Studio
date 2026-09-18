@@ -19,8 +19,12 @@ test('Neutral 50 generates the absolute 0 to 100 scale', () => {
   assert.equal(scale['--bc-color-neutral-100'], '#000000');
 });
 
-test('Ground and Interaction remain direct source values rather than invented ramps', () => {
-  assert.deepEqual(generatedOverrides('--bc-color-ground-ramp-1', '#f4efe6'), {'--bc-color-ground-ramp-1':'#f4efe6'});
+test('Ground source colours generate Canvas-only tone families while Interaction stays direct', () => {
+  const ground = generatedOverrides('--bc-color-ground-ramp-1', '#f4efe6');
+  assert.equal(Object.keys(ground).length, 19);
+  assert.equal(ground['--bc-color-ground-ramp-1'], '#f4efe6');
+  assert.equal(ground['--bc-color-ground-ramp-1-tint-90'], '#fefdfd');
+  assert.equal(ground['--bc-color-ground-ramp-1-shade-90'], '#181817');
   assert.deepEqual(generatedOverrides('--bc-color-interaction-focus', '#ff00aa'), {'--bc-color-interaction-focus':'#ff00aa'});
 });
 

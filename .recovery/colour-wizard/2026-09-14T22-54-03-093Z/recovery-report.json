@@ -1,0 +1,38 @@
+{
+  "recoveredAt": "2026-09-14T22:54:03.255Z",
+  "source": "git",
+  "ref": "73e2c2753cb390f7581783ee6c5bb65821760e4c",
+  "before": {
+    "rich": 7,
+    "newer": 0,
+    "total": 7,
+    "hits": [
+      "accessibility",
+      "swatch",
+      "semantic preview"
+    ],
+    "size": 79575
+  },
+  "after": {
+    "rich": 14,
+    "newer": 2,
+    "total": 16,
+    "hits": [
+      "accessibility",
+      "contrast",
+      "swatch",
+      "export",
+      "semantic preview"
+    ],
+    "size": 116977
+  },
+  "restoredFiles": [
+    "public/app.js",
+    "src/server.mjs",
+    "src/semantic-colour.mjs",
+    "src/colour-contract.json",
+    "tests/semantic-colour.test.mjs",
+    "tests/colour-wizard.test.mjs"
+  ],
+  "note": "This restores the richer pre-regression Colour Wizard before reapplying Foundation contract changes."
+}
