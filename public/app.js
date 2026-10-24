@@ -19,6 +19,8 @@ let colourSemanticPreview = null;
 let currentTypographyStage = Math.max(1,Math.min(7,Number(localStorage.getItem('buffercore.studio.typographyStage')||1)));
 let typographyState = null;
 let typographyBusy = false;
+let localServicesState = [];
+let servicesPollTimer = null;
 
 const steps = [
   ['Identity','Name, intent and starting point'],
@@ -121,8 +123,9 @@ function promptDialog(message,{title='Enter a value',label='Value',value='',conf
 }
 
 
-function setView(name){$$('.view').forEach(v=>v.classList.remove('active'));$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===name));$(`#view-${name}`).classList.add('active');localStorage.setItem('buffercore.studio.view',name)}
+function setView(name){const target=$(`#view-${name}`);if(!target)return;$$('.view').forEach(v=>v.classList.remove('active'));$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===name));target.classList.add('active');localStorage.setItem('buffercore.studio.view',name);if(name==='services')refreshServices()}
 $$('.nav-item').forEach(button=>button.onclick=()=>setView(button.dataset.view));
+$$('[data-view-target]').forEach(button=>button.onclick=()=>setView(button.dataset.viewTarget));
 
 function foundationCount(flavour, ids){return ids.reduce((sum,id)=>sum+(flavour?.foundationCounts?.[id]||0),0)}
 function tokensForFoundation(id){return latest?.catalogue?.foundations?.find(f=>f.id===id)?.tokens||[]}
@@ -137,6 +140,68 @@ function renderLibrary(){const root=$('#flavourLibrary');const items=latest?.fla
 function renderCore(){const c=latest?.catalogue;$('#coreCatalogue').innerHTML=(c?.foundations||[]).map(f=>`<article class="catalogue-card"><h3>${escapeHtml(f.id)}</h3><div class="count">${f.primitiveCount}</div><p>Primitive tokens available to Flavours</p><div class="foundation-chips">${Object.entries(f.valueTypes||{}).map(([k,v])=>`<span class="chip">${escapeHtml(k)} ${v}</span>`).join('')}</div></article>`).join('')||'<div class="empty">Build the Engine manifest first.</div>'}
 
 function renderSync(data){const labels={core:'BufferCore',flavours:'Flavours',engine:'Engine',figma:'Figma',studio:'Studio'};$('#statusPill').textContent=data.busy?'Working…':'Ready';$('#repos').innerHTML=Object.entries(data.repositories).map(([id,r])=>`<div class="repo"><div class="repo-name">${labels[id]}</div><div class="meta">${r.available?`${escapeHtml(r.branch||'detached')} · ${short(r.commit)}`:'Not a Git repo'}</div><div class="${r.dirty?'dirty':'clean'}">${r.dirty?`${r.status.length} change${r.status.length===1?'':'s'}`:'Clean'}</div></div>`).join('');const current=$('#flavour').value;$('#flavour').innerHTML='<option value="">Core baseline</option>'+data.flavours.map(f=>`<option value="${escapeHtml(f.id)}">${escapeHtml(f.displayName)}</option>`).join('');if([...$('#flavour').options].some(o=>o.value===current))$('#flavour').value=current;const f=data.manifests.figma;$('#resolved').innerHTML=f?`<b>${escapeHtml(f.flavour?.displayName||f.flavour?.id||'Core baseline')}</b><div class="meta">Generated ${escapeHtml(f.generatedAt||'—')}</div>`:'No generated Figma manifest yet.';$('#metrics').innerHTML=f?`<div class="metric"><b>${f.collections}</b><span>Collections</span></div><div class="metric"><b>${f.variables}</b><span>Variables</span></div><div class="metric"><b>${f.styles}</b><span>Styles</span></div>`:'';$('#changeList').innerHTML=Object.entries(data.repositories).flatMap(([id,r])=>(r.status||[]).map(s=>`<div class="meta">${labels[id]} · ${escapeHtml(s)}</div>`)).join('')||'<div class="meta">No uncommitted changes.</div>';const clean=Object.values(data.repositories).every(r=>!r.dirty);$('#repoHealth').textContent=clean?'Repositories clean':'Repository changes present'}
+
+function serviceStateLabel(service){
+  if(service.state==='running')return 'Running';
+  if(service.state==='external')return 'Running externally';
+  if(service.state==='starting')return 'Starting…';
+  if(service.state==='error')return 'Error';
+  return 'Stopped';
+}
+function serviceStateCopy(service){
+  if(service.state==='running')return `Managed by Studio${service.pid?` · PID ${service.pid}`:''}`;
+  if(service.state==='external')return 'Available, but started outside Studio. Studio will not stop this process.';
+  if(service.state==='starting')return 'Studio started the process and is waiting for its health endpoint.';
+  if(service.state==='error')return 'The process was started but its health endpoint is unavailable. Check the log below.';
+  return 'Not currently running.';
+}
+function renderServiceMiniStatus(){
+  const service=localServicesState.find(item=>item.id==='figma-bridge');
+  const dot=$('#figmaBridgeDot'),text=$('#figmaBridgeMiniStatus');
+  if(!dot||!text)return;
+  dot.className=`service-dot ${service?.state||'stopped'}`;
+  text.textContent=service?serviceStateLabel(service):'Unavailable';
+}
+function renderServices(){
+  const root=$('#localServices');
+  if(!root)return;
+  const running=localServicesState.filter(s=>s.running).length;
+  const managed=localServicesState.filter(s=>s.managed&&s.running).length;
+  const overview=$('#serviceOverviewState');
+  if(overview)overview.innerHTML=`<b>${running}/${localServicesState.length}</b><span>running · ${managed} managed by Studio</span>`;
+  if(!localServicesState.length){root.innerHTML='<section class="card"><h2>No local services registered</h2><p class="meta">Studio has no local service definitions available.</p></section>';renderServiceMiniStatus();return}
+  root.innerHTML=localServicesState.map(service=>{
+    const canStop=service.managed;
+    const canRestart=service.managed||service.state==='stopped'||service.state==='error';
+    const log=(service.logs||[]).map(item=>`<div class="service-log-line ${escapeHtml(item.stream||'stdout')}"><time>${escapeHtml(String(item.at||'').slice(11,19))}</time><span>${escapeHtml(item.line||'')}</span></div>`).join('');
+    return`<article class="service-card card" data-service-id="${escapeHtml(service.id)}">
+      <header class="service-card-head"><div class="service-title"><span class="service-dot ${escapeHtml(service.state)}"></span><div><span class="eyebrow">${escapeHtml(service.id)}</span><h2>${escapeHtml(service.name)}</h2></div></div><span class="service-state ${escapeHtml(service.state)}">${escapeHtml(serviceStateLabel(service))}</span></header>
+      <p class="service-description">${escapeHtml(service.description||'')}</p>
+      <div class="service-runtime"><div><span>Runtime</span><b>${escapeHtml(serviceStateCopy(service))}</b></div><div><span>Port</span><b>${escapeHtml(service.port||'—')}</b></div></div>
+      <div class="service-actions"><button class="primary" data-service-action="start" ${service.running?'disabled':''}>Start</button><button data-service-action="stop" ${canStop?'':'disabled'}>Stop</button><button data-service-action="restart" ${canRestart?'':'disabled'}>Restart</button></div>
+      <div class="service-preferences"><label><input type="checkbox" data-service-setting="autoStart" ${service.autoStart?'checked':''}> <span><b>Start automatically with Studio</b><small>Studio checks for an existing bridge first, so it will not create a duplicate.</small></span></label><label><input type="checkbox" data-service-setting="stopWithStudio" ${service.stopWithStudio?'checked':''}> <span><b>Stop with Studio</b><small>Off by default. Only applies to processes Studio owns.</small></span></label></div>
+      <details class="service-log" ${service.state==='error'?'open':''}><summary>Service log <span>${(service.logs||[]).length}</span></summary><div>${log||'<div class="service-log-empty">No service output yet.</div>'}</div></details>
+    </article>`;
+  }).join('');
+  root.querySelectorAll('[data-service-action]').forEach(button=>button.onclick=()=>runServiceAction(button.closest('[data-service-id]').dataset.serviceId,button.dataset.serviceAction));
+  root.querySelectorAll('[data-service-setting]').forEach(input=>input.onchange=()=>saveServiceSetting(input.closest('[data-service-id]').dataset.serviceId,input.dataset.serviceSetting,input.checked));
+  renderServiceMiniStatus();
+}
+async function refreshServices({silent=false}={}){
+  try{const result=await api('/api/services');localServicesState=result.services||[];renderServices()}
+  catch(e){if(!silent)studioToast(e.message,{tone:'warning',title:'Local services unavailable'});renderServiceMiniStatus()}
+}
+async function runServiceAction(id,action){
+  const card=$(`[data-service-id="${CSS.escape(id)}"]`);
+  card?.classList.add('busy');
+  try{const result=await api(`/api/services/${encodeURIComponent(id)}/${action}`,{method:'POST',body:'{}'});localServicesState=result.services||[];renderServices();const service=result.service;studioToast(`${service.name}: ${serviceStateLabel(service)}.`,{title:`Service ${action}`})}
+  catch(e){await errorDialog(e,{title:`Could not ${action} local service`});await refreshServices({silent:true})}
+  finally{card?.classList.remove('busy')}
+}
+async function saveServiceSetting(id,setting,value){
+  try{const result=await api(`/api/services/${encodeURIComponent(id)}/settings`,{method:'PATCH',body:JSON.stringify({[setting]:value})});localServicesState=result.services||[];renderServices();studioToast('Local service preference saved.',{tone:'info'})}
+  catch(e){await errorDialog(e,{title:'Could not save service preference'});await refreshServices({silent:true})}
+}
 
 function renderAll(data){latest=data;renderLibrary();renderCore();renderSync(data)}
 async function refresh(){try{renderAll(await api('/api/status'))}catch(e){$('#log').textContent=e.message}}
@@ -689,9 +754,11 @@ $('#newFlavour').onclick=startNew;$('#backToFlavours').onclick=()=>{setView('fla
 $('#closeAssistant').onclick=()=>{$('#assistant').classList.add('hidden');$('#openAssistant').classList.remove('hidden')};$('#openAssistant').onclick=()=>{$('#assistant').classList.remove('hidden');$('#openAssistant').classList.add('hidden')};
 
 async function operation(fn){for(const b of $$('button'))b.disabled=true;$('#statusPill').textContent='Working…';try{const d=await fn();if(d.status)renderAll(d.status);$('#log').textContent=[d.stdout,d.engine,d.figma,d.stderr].filter(Boolean).join('\n\n')||'Complete.'}catch(e){$('#log').textContent=e.message;await refresh()}finally{for(const b of $$('button'))b.disabled=false}}
-$('#refresh').onclick=refresh;$('#validate').onclick=()=>operation(()=>api('/api/validate',{method:'POST',body:'{}'}));$('#pull').onclick=()=>operation(()=>api('/api/pull-build',{method:'POST',body:JSON.stringify({flavour:$('#flavour').value||null})}));$('#commitPush').onclick=()=>operation(()=>api('/api/commit-push',{method:'POST',body:JSON.stringify({repository:$('#commitRepo').value,message:$('#commitMessage').value})}));
+$('#refresh').onclick=refresh;$('#refreshServices').onclick=()=>refreshServices();$('#validate').onclick=()=>operation(()=>api('/api/validate',{method:'POST',body:'{}'}));$('#pull').onclick=()=>operation(()=>api('/api/pull-build',{method:'POST',body:JSON.stringify({flavour:$('#flavour').value||null})}));$('#commitPush').onclick=()=>operation(()=>api('/api/commit-push',{method:'POST',body:JSON.stringify({repository:$('#commitRepo').value,message:$('#commitMessage').value})}));
 
 await refresh();
+await refreshServices({silent:true});
+servicesPollTimer=setInterval(()=>refreshServices({silent:true}),4000);
 loadAiStatus();
 const remembered=localStorage.getItem('buffercore.studio.flavourId');
-if(remembered&&latest?.flavours?.some(f=>f.id===remembered)){try{await openFlavour(remembered)}catch{localStorage.removeItem('buffercore.studio.flavourId')}}else{const initial=localStorage.getItem('buffercore.studio.view')||'flavours';if(['flavours','core','sync'].includes(initial))setView(initial)}
+if(remembered&&latest?.flavours?.some(f=>f.id===remembered)){try{await openFlavour(remembered)}catch{localStorage.removeItem('buffercore.studio.flavourId')}}else{const initial=localStorage.getItem('buffercore.studio.view')||'flavours';if(['flavours','core','sync','services'].includes(initial))setView(initial)}

@@ -14,7 +14,9 @@
       <button class="nav-item active" data-view="flavours"><span>◈</span> Flavours</button>
       <button class="nav-item" data-view="core"><span>◇</span> BufferCore</button>
       <button class="nav-item" data-view="sync"><span>↻</span> Sync</button>
+      <button class="nav-item" data-view="services"><span>◉</span> Services</button>
     </nav>
+    <button class="sidebar-service" id="figmaBridgeShortcut" type="button" data-view-target="services" title="Open Local Services"><span class="service-dot stopped" id="figmaBridgeDot"></span><span><b>Figma Bridge</b><small id="figmaBridgeMiniStatus">Checking…</small></span></button>
     <div class="sidebar-foot"><span class="dot"></span><span id="repoHealth">Checking repositories…</span></div>
   </aside>
 
@@ -42,6 +44,18 @@
     <section id="view-core" class="view">
       <header class="page-head"><div><div class="eyebrow">BufferCore</div><h1>Foundation reference</h1><p>The wizard reads the current Engine manifest and exposes only Primitive tokens as Flavour-editable material.</p></div></header>
       <div id="coreCatalogue" class="catalogue-grid"></div>
+    </section>
+
+
+    <section id="view-services" class="view">
+      <header class="page-head"><div><div class="eyebrow">System · Local Services</div><h1>Local services</h1><p>Start and monitor the local processes BufferCore tools depend on without opening separate command windows.</p></div><button class="secondary" id="refreshServices">Refresh status</button></header>
+      <div class="services-shell">
+        <section class="service-overview card">
+          <div><span class="eyebrow">Runtime</span><h2>BufferCore service controller</h2><p>Studio only stops processes it started itself. If a service is already running elsewhere it is detected as External and left alone.</p></div>
+          <div class="service-overview-state" id="serviceOverviewState">Checking services…</div>
+        </section>
+        <div id="localServices" class="services-grid"><section class="card">Checking local services…</section></div>
+      </div>
     </section>
 
     <section id="view-sync" class="view">

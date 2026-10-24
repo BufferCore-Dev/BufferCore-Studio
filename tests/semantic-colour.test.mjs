@@ -492,7 +492,7 @@ test('family-preservation pruning does not change manual legal candidate bands',
 });
 
 
-test('generated General Text spacing is adaptive rather than tied to hard-coded Neutral steps',()=>{
+test('generated Neutral Text spacing is adaptive rather than tied to hard-coded Neutral steps',()=>{
   const flavour=completeFlavour();
 
   for(const mode of ['light','dark']){
@@ -505,7 +505,7 @@ test('generated General Text spacing is adaptive rather than tied to hard-coded 
         : ['Text Muted','Text Subtle','Text Default'];
 
       const rows=names.map(name=>sets.find(set=>set.name===name));
-      assert.ok(rows.every(Boolean),`${mode} ${inverse?'inverse':'normal'} General Text rows missing`);
+      assert.ok(rows.every(Boolean),`${mode} ${inverse?'inverse':'normal'} Neutral Text rows missing`);
 
       const chosen=rows.map(row=>{
         const source=result.selected[row.token];
@@ -531,7 +531,7 @@ test('generated General Text spacing is adaptive rather than tied to hard-coded 
   }
 });
 
-test('adaptive General Text generation contains no fixed Neutral token choices',()=>{
+test('adaptive Neutral Text generation contains no fixed Neutral token choices',()=>{
   const source=readFileSync(new URL('../src/semantic-colour.mjs', import.meta.url),'utf8');
   const block=source.slice(
     source.indexOf('function adaptiveGeneralTextHierarchy'),

@@ -13,6 +13,7 @@ import { reviewFlavour } from './review.mjs';
 import { applyFlavour } from '../../BufferCore-Engine/packages/flavour-engine.mjs';
 import { buildSemanticCandidateSets, completeSemanticSelections, fixedSemanticMappings, semanticCompletion, semanticDesignBatches, semanticFindings, validateSemanticMappings } from './semantic-colour.mjs';
 import { buildTypographyCandidateSets, baselineTypographyMappings, effectiveTypographyMappings, normaliseTypographyOverrides, typographyCompletion, validateTypographyMappings } from './semantic-typography.mjs';
+import { createLocalServiceManager } from './local-services.mjs';
 
 const execFileAsync = promisify(execFile);
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -25,6 +26,7 @@ const publicRoot = path.join(studioRoot, 'public');
 const manifestPath = path.join(figmaRoot, 'generated', 'figma', 'buffercore.figma.json');
 const engineManifestPath = path.join(engineRoot, 'generated', 'manifest', 'buffercore.json');
 const port = Number(process.env.BUFFERCORE_STUDIO_PORT || 3850);
+const localServices = createLocalServiceManager({ studioRoot, systemRoot });
 let busy = false;
 
 function sendJson(res, status, body) {
@@ -240,6 +242,22 @@ function serveStatic(req, res) {
 const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && req.url === '/api/status') return sendJson(res, 200, status());
+    if (req.method === 'GET' && req.url === '/api/services') {
+      return sendJson(res, 200, { ok: true, services: await localServices.list() });
+    }
+    if (req.url.match(/^\/api\/services\/[^/]+\/(start|stop|restart)$/) && req.method === 'POST') {
+      const parts = req.url.split('/');
+      const id = decodeURIComponent(parts[3]);
+      const action = parts[4];
+      const service = await localServices[action](id);
+      return sendJson(res, 200, { ok: true, service, services: await localServices.list() });
+    }
+    if (req.url.match(/^\/api\/services\/[^/]+\/settings$/) && req.method === 'PATCH') {
+      const id = decodeURIComponent(req.url.split('/')[3]);
+      const data = await body(req);
+      const service = await localServices.configure(id, data);
+      return sendJson(res, 200, { ok: true, service, services: await localServices.list() });
+    }
     if (req.method === 'GET' && req.url.match(/^\/api\/flavours\/[^/]+\/typography-semantics$/)) {
       const id = decodeURIComponent(req.url.split('/')[3]);
       const flavour = getFlavourDocument(flavoursRoot, id);
@@ -511,4 +529,16 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(port, '127.0.0.1', () => {
   console.log(`BufferCore Studio sync surface: http://127.0.0.1:${port}`);
+  localServices.autoStart().catch((error) => console.error(`Local service auto-start failed: ${error?.message || error}`));
 });
+
+let shuttingDown = false;
+async function shutdownStudio(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  try { await localServices.shutdown(); } catch {}
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1500).unref();
+}
+process.on('SIGINT', () => shutdownStudio('SIGINT'));
+process.on('SIGTERM', () => shutdownStudio('SIGTERM'));

@@ -467,7 +467,7 @@ export function semanticCompletion(flavour, mode) {
 
 
 
-// General Text spacing is derived from the current legal candidate evidence.
+// Neutral Text spacing is derived from the current legal candidate evidence.
 // No Neutral step is hard-coded here. The generator spreads Muted / Subtle /
 // Default across the usable contrast range after accessibility filtering, while
 // still allowing the manual mapping UI to choose any legal candidate.
